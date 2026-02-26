@@ -9,18 +9,19 @@ export function Landing() {
 
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] flex-col">
-      <section className="container flex flex-1 flex-col items-center justify-center px-4 py-24 text-center">
+      <section className="flex flex-1 flex-col items-center justify-center px-4 py-24">
+        <div className="mx-auto w-full max-w-4xl text-center">
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
           New Grad 求职
           <br />
           <span className="text-primary">一键到位</span>
         </h1>
-        <p className="mt-6 max-w-2xl text-lg text-muted-foreground">
+        <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
           按匹配度排名职位，apply N 触发全流程：JD 解析 → 定制简历 → 导出 PDF。
           <br />
           连接 Google 即可开始，无需 API Key。
         </p>
-        <div className="mt-10 flex gap-4">
+        <div className="mx-auto mt-10 flex justify-center gap-4">
           {user ? (
             <Link to="/dashboard">
               <Button size="lg" className="gap-2">
@@ -37,12 +38,13 @@ export function Landing() {
             </Link>
           )}
         </div>
+        </div>
       </section>
 
       <section className="border-t bg-muted/30 py-24">
-        <div className="container px-4">
+        <div className="mx-auto max-w-4xl px-4">
           <h2 className="text-center text-2xl font-semibold">核心能力</h2>
-          <div className="mx-auto mt-12 grid max-w-4xl gap-8 sm:grid-cols-3">
+          <div className="mt-12 grid gap-8 sm:grid-cols-3">
             <Feature
               icon={<BarChart3 className="h-8 w-8" />}
               title="智能排名"
