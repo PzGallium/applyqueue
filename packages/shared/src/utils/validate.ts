@@ -49,11 +49,11 @@ export const preferencesSchema = z.object({
   industries: z.array(z.string().max(100)),
   excludeCompanies: z.array(z.string().max(200)),
   autoRankWeights: z.object({
-    roleMatch: z.number().min(0).max(1),
-    locationMatch: z.number().min(0).max(1),
-    companyRating: z.number().min(0).max(1),
-    salaryMatch: z.number().min(0).max(1),
-    recency: z.number().min(0).max(1),
+    roleMatch: z.number().min(0),
+    locationMatch: z.number().min(0),
+    companyRating: z.number().min(0),
+    salaryMatch: z.number().min(0),
+    recency: z.number().min(0),
   }),
 });
 
