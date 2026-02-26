@@ -19,7 +19,7 @@ import {
   exportResumeToPdf,
   buildPdfFilename,
 } from '../services/apply/pdf-exporter';
-import { uploadResumePdf } from '../services/apply/artifact-store';
+import { uploadResumePdf, getResumeDownloadUrl } from '../services/apply/artifact-store';
 import {
   APPLY_ERROR_CODES,
   type ApplyMvpStatus,
@@ -29,6 +29,10 @@ import {
 const db = getFirestore();
 const MVP_LLM_PROVIDER = 'gemini';
 const MIN_JD_LENGTH = 50;
+/** 1-hour bucket for idempotency: same user + rankIndex within same hour reuses or conflicts. */
+function getIdempotencyDateBucket(): string {
+  return new Date().toISOString().slice(0, 13);
+}
 
 async function updateApplicationStatus(
   applyId: string,
@@ -43,7 +47,9 @@ async function updateApplicationStatus(
   });
 }
 
-export const applyApi = onRequest({ timeoutSeconds: 300 }, async (req, res) => {
+export const applyApi = onRequest(
+  { timeoutSeconds: 300, memory: '1GiB', cpu: 1 },
+  async (req, res) => {
   if (req.method !== 'POST') {
     error(res, 405, 'METHOD_NOT_ALLOWED', 'Use POST');
     return;
@@ -57,7 +63,8 @@ export const applyApi = onRequest({ timeoutSeconds: 300 }, async (req, res) => {
     error(res, 400, APPLY_ERROR_CODES.INVALID_INPUT, parsed.error.message);
     return;
   }
-  const { rankIndex } = parsed.data;
+  const { rankIndex, idempotencyKey: bodyIdempotencyKey } = parsed.data;
+  const idempotencyKey = bodyIdempotencyKey ?? `${user.uid}:${rankIndex}:${getIdempotencyDateBucket()}`;
 
   let applyId: string | undefined;
   let jobId: string;
@@ -109,6 +116,48 @@ export const applyApi = onRequest({ timeoutSeconds: 300 }, async (req, res) => {
       return;
     }
 
+    const existingSnap = await db
+      .collection('applications')
+      .where('userId', '==', user.uid)
+      .where('idempotencyKey', '==', idempotencyKey)
+      .orderBy('createdAt', 'desc')
+      .limit(1)
+      .get();
+    if (!existingSnap.empty) {
+      const existing = existingSnap.docs[0];
+      const data = existing.data();
+      const existingStatus = data.status as ApplyMvpStatus;
+      if (existingStatus === 'done') {
+        const existingJobId = data.jobId as string;
+        const jobDocForExisting = await db.doc(`jobs/${existingJobId}`).get();
+        const jobDataExisting = jobDocForExisting.exists ? (jobDocForExisting.data() as Job) : null;
+        let artifact: { path: string; downloadUrl: string; expiresAt: string };
+        try {
+          artifact = await getResumeDownloadUrl(user.uid, existing.id);
+        } catch {
+          error(res, 500, APPLY_ERROR_CODES.STORAGE_UPLOAD_FAILED, 'Could not get download URL for existing resume');
+          return;
+        }
+        const bodyExisting: ApplyMvpSuccessResponse = {
+          applyId: existing.id,
+          job: {
+            id: existingJobId,
+            title: jobDataExisting?.title ?? '',
+            company: jobDataExisting?.company ?? '',
+            sourceUrl: jobDataExisting?.url ?? null,
+          },
+          status: 'done',
+          artifact: { format: 'pdf', path: artifact.path, downloadUrl: artifact.downloadUrl, expiresAt: artifact.expiresAt },
+        };
+        success(res, 200, bodyExisting);
+        return;
+      }
+      if (existingStatus !== 'failed') {
+        error(res, 409, APPLY_ERROR_CODES.APPLICATION_IN_PROGRESS, `Application ${existing.id} already in progress (${existingStatus}). Use GET /api/applications/${existing.id} to poll.`);
+        return;
+      }
+    }
+
     const appRef = db.collection('applications').doc();
     const applicationId = appRef.id;
     applyId = applicationId;
@@ -116,6 +165,7 @@ export const applyApi = onRequest({ timeoutSeconds: 300 }, async (req, res) => {
       userId: user.uid,
       rankIndex,
       jobId,
+      idempotencyKey,
       status: 'queued' as ApplyMvpStatus,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -132,10 +182,10 @@ export const applyApi = onRequest({ timeoutSeconds: 300 }, async (req, res) => {
     }
     if (!apiKey) {
       await updateApplicationStatus(applicationId, 'failed', {
-        errorCode: APPLY_ERROR_CODES.INTERNAL_ERROR,
+        errorCode: APPLY_ERROR_CODES.CREDENTIAL_NOT_CONFIGURED,
         errorMessage: 'Configure LLM API key for Gemini first',
       });
-      error(res, 400, APPLY_ERROR_CODES.INTERNAL_ERROR, 'Configure LLM API key for Gemini first');
+      error(res, 400, APPLY_ERROR_CODES.CREDENTIAL_NOT_CONFIGURED, 'Configure LLM API key for Gemini first');
       return;
     }
 

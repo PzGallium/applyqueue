@@ -1,5 +1,8 @@
 /**
  * Apply MVP — render ResumeContent to HTML and export to PDF (Letter).
+ *
+ * Uses Puppeteer (bundled Chromium). For Firebase Functions deployment:
+ * consider size/cold-start/memory — see docs/apply-mvp-delivery.md § 六、Puppeteer 部署风险.
  */
 
 import type { ResumeContent } from './types';

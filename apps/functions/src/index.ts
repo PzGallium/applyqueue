@@ -36,3 +36,4 @@ export {
 
 // Apply
 export { applyApi } from './functions/apply.fn';
+export { applicationsApi } from './functions/applications.fn';

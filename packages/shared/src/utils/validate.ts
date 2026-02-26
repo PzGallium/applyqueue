@@ -67,9 +67,10 @@ export const applyRequestSchema = z.object({
   }),
 });
 
-/** MVP: POST /api/apply body — rankIndex only (1-based). */
+/** MVP: POST /api/apply body — rankIndex only (1-based). Optional idempotencyKey for dedup. */
 export const applyMvpRequestSchema = z.object({
   rankIndex: z.number().int().min(1),
+  idempotencyKey: z.string().max(200).optional(),
 });
 
 // ---------------------------------------------------------------------------
