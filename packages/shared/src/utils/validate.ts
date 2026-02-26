@@ -49,11 +49,11 @@ export const preferencesSchema = z.object({
   industries: z.array(z.string().max(100)),
   excludeCompanies: z.array(z.string().max(200)),
   autoRankWeights: z.object({
-    roleMatch: z.number().min(0).max(1),
-    locationMatch: z.number().min(0).max(1),
-    companyRating: z.number().min(0).max(1),
-    salaryMatch: z.number().min(0).max(1),
-    recency: z.number().min(0).max(1),
+    roleMatch: z.number().min(0),
+    locationMatch: z.number().min(0),
+    companyRating: z.number().min(0),
+    salaryMatch: z.number().min(0),
+    recency: z.number().min(0),
   }),
 });
 
@@ -67,13 +67,70 @@ export const applyRequestSchema = z.object({
   }),
 });
 
+// ---------------------------------------------------------------------------
+// Key Management schemas
+// ---------------------------------------------------------------------------
+
+const providerEnum = z.enum(['gemini', 'openai', 'anthropic', 'brave']);
+
 export const keyUpdateSchema = z.object({
-  provider: z.string().min(1).max(50),
+  provider: providerEnum,
   apiKey: z.string().min(10).max(500),
+});
+
+export const oauthCallbackSchema = z.object({
+  provider: providerEnum,
+  code: z.string().min(1),
+  state: z.string().min(1),
+  redirectUri: z.string().url(),
+});
+
+export const keyDeleteSchema = z.object({
+  provider: providerEnum,
+});
+
+export const keyValidateSchema = z.object({
+  provider: providerEnum,
+  apiKey: z.string().min(10).max(500).optional(),
 });
 
 export const applicationUpdateSchema = z.object({
   status: z.enum(['saved', 'applied', 'oa', 'interview', 'offer', 'rejected']).optional(),
   note: z.string().max(2000).optional(),
   priority: z.enum(['high', 'medium', 'low']).optional(),
+});
+
+// ---------------------------------------------------------------------------
+// Project Intelligence Layer schemas
+// ---------------------------------------------------------------------------
+
+const roleTagEnum = z.enum([
+  'frontend', 'backend', 'fullstack', 'mobile', 'ml', 'data', 'devops', 'security', 'other',
+]);
+
+export const userProjectSchema = z.object({
+  title: z.string().min(1).max(200),
+  summary: z.string().max(3000),
+  domainTags: z.array(z.string().max(50)),
+  techTags: z.array(z.string().max(50)),
+  roleTags: z.array(roleTagEnum).min(1),
+  difficultyLevel: z.enum(['beginner', 'intermediate', 'advanced']),
+  impactMetrics: z.record(z.unknown()).default({}),
+  recencyScore: z.number().min(0).max(100).default(50),
+  proofLinks: z.array(z.string().url()).default([]),
+  rawBullets: z.array(z.string().max(500)).min(1),
+});
+
+export const jdParseRequestSchema = z.object({
+  sourceUrl: z.string().url().optional(),
+  rawText: z.string().min(50).max(20000),
+  llmProvider: z.string().min(1),
+  llmModel: z.string().optional(),
+});
+
+export const projectMatchRunSchema = z.object({
+  jdProfileId: z.string().min(1),
+  topK: z.number().int().min(1).max(10).default(3),
+  llmProvider: z.string().min(1),
+  llmModel: z.string().optional(),
 });

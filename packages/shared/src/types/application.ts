@@ -31,6 +31,7 @@ export interface Application {
 export type ApplyStepName =
   | 'jd_fetch'
   | 'jd_parse'
+  | 'project_match'
   | 'resume_generate'
   | 'export_pdf'
   | 'export_docx';

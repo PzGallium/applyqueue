@@ -70,16 +70,47 @@ export interface User {
   updatedAt: string;
 }
 
+// ---------------------------------------------------------------------------
+// Provider Connection — unified model for API Key + OAuth dual-mode
+// ---------------------------------------------------------------------------
+
+export type ConnectionMode = 'api_key' | 'oauth';
+
+export interface EncryptedValue {
+  ciphertext: string;
+  iv: string;
+  tag: string;
+}
+
+export interface ProviderConnection {
+  provider: string;
+  mode: ConnectionMode;
+  apiKey?: EncryptedValue;
+  oauth?: {
+    accessToken: EncryptedValue;
+    refreshToken: EncryptedValue;
+    expiresAt: string;
+    scope: string;
+    email?: string;
+  };
+  displayLabel: string;
+  updatedAt: string;
+}
+
+/**
+ * Firestore: user_keys/{userId}
+ * Contains all provider connections for a user.
+ * Client-side access is fully blocked (server-only via Admin SDK).
+ */
+export interface UserKeys {
+  connections: Record<string, ProviderConnection>;
+  updatedAt: string;
+}
+
+/** @deprecated — kept for backward compat during migration */
 export interface EncryptedKey {
   encryptedKey: string;
   iv: string;
   tag: string;
   updatedAt: string;
-}
-
-export interface UserKeys {
-  openai?: EncryptedKey;
-  anthropic?: EncryptedKey;
-  brave?: EncryptedKey;
-  custom: Array<EncryptedKey & { provider: string }>;
 }
