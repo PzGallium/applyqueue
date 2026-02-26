@@ -30,6 +30,7 @@ function TagList({
   ordered?: boolean;
 }) {
   const [draft, setDraft] = useState('');
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   const add = () => {
     const val = draft.trim();
@@ -40,19 +41,36 @@ function TagList({
 
   const remove = (idx: number) => onChange(items.filter((_, i) => i !== idx));
 
-  const moveUp = (idx: number) => {
-    if (idx === 0) return;
+  const moveByDrag = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return;
     const next = [...items];
-    [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
+    const [removed] = next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, removed);
     onChange(next);
+    setDraggedIndex(null);
   };
 
-  const moveDown = (idx: number) => {
-    if (idx === items.length - 1) return;
-    const next = [...items];
-    [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
-    onChange(next);
+  const handleDragStart = (e: React.DragEvent, idx: number) => {
+    setDraggedIndex(idx);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(idx));
+    e.dataTransfer.setData('application/json', JSON.stringify({ index: idx }));
   };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, toIndex: number) => {
+    e.preventDefault();
+    const raw = e.dataTransfer.getData('application/json') || e.dataTransfer.getData('text/plain');
+    const fromIndex = typeof raw === 'string' && /^\d+$/.test(raw) ? parseInt(raw, 10) : (() => { try { return JSON.parse(raw).index; } catch { return null; } })();
+    if (fromIndex != null && fromIndex !== toIndex) moveByDrag(fromIndex, toIndex);
+    setDraggedIndex(null);
+  };
+
+  const handleDragEnd = () => setDraggedIndex(null);
 
   return (
     <div className="space-y-2">
@@ -75,27 +93,20 @@ function TagList({
           {items.map((item, idx) => (
             <div
               key={`${item}-${idx}`}
-              className="group flex items-center gap-2 rounded-md border border-input px-2.5 py-1.5 text-sm"
+              className={`group flex items-center gap-2 rounded-md border border-input px-2.5 py-1.5 text-sm ${draggedIndex === idx ? 'opacity-50' : ''} ${ordered ? 'cursor-grab active:cursor-grabbing' : ''}`}
+              draggable={ordered}
+              onDragStart={ordered ? (e) => handleDragStart(e, idx) : undefined}
+              onDragOver={ordered ? handleDragOver : undefined}
+              onDrop={ordered ? (e) => handleDrop(e, idx) : undefined}
+              onDragEnd={ordered ? handleDragEnd : undefined}
             >
               {ordered && (
-                <div className="flex flex-col">
-                  <button
-                    type="button"
-                    className="text-muted-foreground hover:text-foreground disabled:opacity-30"
-                    onClick={() => moveUp(idx)}
-                    disabled={idx === 0}
-                  >
-                    <GripVertical className="h-3 w-3 rotate-180" />
-                  </button>
-                  <button
-                    type="button"
-                    className="text-muted-foreground hover:text-foreground disabled:opacity-30"
-                    onClick={() => moveDown(idx)}
-                    disabled={idx === items.length - 1}
-                  >
-                    <GripVertical className="h-3 w-3" />
-                  </button>
-                </div>
+                <span
+                  className="touch-none text-muted-foreground hover:text-foreground [.group:active_&]:cursor-grabbing"
+                  onPointerDown={(e) => e.stopPropagation()}
+                >
+                  <GripVertical className="h-4 w-4" />
+                </span>
               )}
               {ordered && (
                 <span className="w-5 text-center text-xs font-mono text-muted-foreground">
@@ -162,7 +173,7 @@ export function PreferencesForm() {
   const [locationPriorities, setLocationPriorities] = useState<string[]>([]);
   const [targetLevels, setTargetLevels] = useState<string[]>([]);
   const [priorityCompanies, setPriorityCompanies] = useState<string[]>([]);
-  const [batchSize, setBatchSize] = useState(10);
+  const [batchSizeInput, setBatchSizeInput] = useState('10');
 
   useEffect(() => {
     getPreferences().then((p) => {
@@ -171,19 +182,20 @@ export function PreferencesForm() {
       if (p.locationPriorities?.length) setLocationPriorities(p.locationPriorities);
       if (p.targetLevels?.length) setTargetLevels(p.targetLevels);
       if (p.priorityCompanies?.length) setPriorityCompanies(p.priorityCompanies);
-      if (p.batchSize) setBatchSize(p.batchSize);
+      setBatchSizeInput(p.batchSize != null && p.batchSize > 0 ? String(p.batchSize) : '');
     });
   }, [getPreferences]);
 
   const handleSave = async () => {
     setSaved(false);
+    const batchSizeNum = Math.min(50, Math.max(1, Number(batchSizeInput) || 1));
     const ok = await savePreferences({
       roleKeywords,
       techKeywords,
       locationPriorities,
       targetLevels,
       priorityCompanies,
-      batchSize,
+      batchSize: batchSizeNum,
     });
     if (ok) {
       setSaved(true);
@@ -299,14 +311,15 @@ export function PreferencesForm() {
         <section>
           <h3 className="mb-1.5 text-sm font-medium">每批推送数量</h3>
           <p className="mb-2 text-xs text-muted-foreground">
-            每天推送两次（早 9 点 + 晚 9 点），每次推送 Top N 条。
+            每天推送两次（早 9 点 + 晚 9 点），每次推送 Top N 条。可清空后输入 1～50。
           </p>
           <Input
             type="number"
             min={1}
             max={50}
-            value={batchSize}
-            onChange={(e) => setBatchSize(Number(e.target.value) || 10)}
+            placeholder="1～50"
+            value={batchSizeInput}
+            onChange={(e) => setBatchSizeInput(e.target.value)}
             className="w-24"
           />
         </section>

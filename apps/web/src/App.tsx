@@ -4,7 +4,6 @@ import { Landing } from '@/pages/Landing';
 import { Login } from '@/pages/Login';
 import { Dashboard } from '@/pages/Dashboard';
 import { Settings } from '@/pages/Settings';
-import { OAuthCallback } from '@/pages/OAuthCallback';
 import { useAuth } from '@/hooks/useAuth';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -27,7 +26,7 @@ export function App() {
         <Route element={<Shell />}>
           <Route path="/" element={<Landing />} />
           <Route path="/auth/login" element={<Login />} />
-          <Route path="/auth/oauth/callback" element={<OAuthCallback />} />
+          <Route path="/auth/oauth/callback" element={<Navigate to="/settings" replace />} />
           <Route
             path="/dashboard"
             element={
