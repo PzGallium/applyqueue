@@ -134,3 +134,21 @@ export const projectMatchRunSchema = z.object({
   llmProvider: z.string().min(1),
   llmModel: z.string().optional(),
 });
+
+// ---------------------------------------------------------------------------
+// Job Source Management schemas
+// ---------------------------------------------------------------------------
+
+export const jobSourceCreateSchema = z.object({
+  name: z.string().min(1).max(200),
+  type: z.enum(['greenhouse', 'lever', 'ashby', 'rss', 'custom']),
+  config: z.object({
+    baseUrl: z.string().min(1).max(500),
+    filters: z.record(z.string()).default({}),
+    schedule: z.string().default('0 9,21 * * *'),
+  }),
+});
+
+export const jobSourceDeleteSchema = z.object({
+  sourceId: z.string().min(1),
+});
