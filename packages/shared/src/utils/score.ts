@@ -30,10 +30,10 @@ export function normalizeWeights(raw: RankWeights): RankWeights {
 
   if (sum === 0) {
     const equal = 1 / keys.length;
-    return Object.fromEntries(keys.map((k) => [k, equal])) as RankWeights;
+    return Object.fromEntries(keys.map((k) => [k, equal])) as unknown as RankWeights;
   }
 
-  return Object.fromEntries(keys.map((k) => [k, Math.max(0, raw[k]) / sum])) as RankWeights;
+  return Object.fromEntries(keys.map((k) => [k, Math.max(0, raw[k]) / sum])) as unknown as RankWeights;
 }
 
 /**

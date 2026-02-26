@@ -107,8 +107,8 @@ export function scoreProject(
   const keys = Object.keys(weights) as (keyof ProjectScoreWeights)[];
   const wSum = keys.reduce((a, k) => a + weights[k], 0);
   const normalizedWeights = wSum === 0
-    ? Object.fromEntries(keys.map((k) => [k, 1 / keys.length])) as ProjectScoreWeights
-    : Object.fromEntries(keys.map((k) => [k, weights[k] / wSum])) as ProjectScoreWeights;
+    ? (Object.fromEntries(keys.map((k) => [k, 1 / keys.length])) as unknown as ProjectScoreWeights)
+    : (Object.fromEntries(keys.map((k) => [k, weights[k] / wSum])) as unknown as ProjectScoreWeights);
 
   const scoreTotal = Math.round(
     keys.reduce((acc, k) => acc + breakdown[k] * normalizedWeights[k], 0),
