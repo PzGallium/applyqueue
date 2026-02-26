@@ -49,6 +49,12 @@ export interface RankWeights {
   recency: number;
 }
 
+/** Ordered keyword group — items earlier in the array have higher priority. */
+export interface PriorityKeyword {
+  keyword: string;
+  priority: number;
+}
+
 export interface UserPreferences {
   targetRoles: string[];
   targetLocations: string[];
@@ -57,6 +63,19 @@ export interface UserPreferences {
   industries: string[];
   excludeCompanies: string[];
   autoRankWeights: RankWeights;
+
+  /** Ordered role keywords — higher index = lower priority (e.g. ["Java Backend", "Java Fullstack", "Backend", "Fullstack", "Frontend"]) */
+  roleKeywords?: string[];
+  /** Tech keywords for JD matching (e.g. ["Java", "Web Development", "Distributed Systems"]) */
+  techKeywords?: string[];
+  /** Ordered location preferences — first = highest (e.g. ["Remote", "Gainesville, FL", "Tampa, FL"]) */
+  locationPriorities?: string[];
+  /** Target levels (e.g. ["new_grad", "entry", "intern"]) */
+  targetLevels?: string[];
+  /** Companies to flag as high-priority ("big company" alerts) */
+  priorityCompanies?: string[];
+  /** Jobs per batch (default 10) */
+  batchSize?: number;
 }
 
 export interface User {
