@@ -5,3 +5,4 @@ export * from './resume';
 export * from './export';
 export * from './event';
 export * from './api';
+export * from './project-intel';

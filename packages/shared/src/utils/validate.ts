@@ -77,3 +77,38 @@ export const applicationUpdateSchema = z.object({
   note: z.string().max(2000).optional(),
   priority: z.enum(['high', 'medium', 'low']).optional(),
 });
+
+// ---------------------------------------------------------------------------
+// Project Intelligence Layer schemas
+// ---------------------------------------------------------------------------
+
+const roleTagEnum = z.enum([
+  'frontend', 'backend', 'fullstack', 'mobile', 'ml', 'data', 'devops', 'security', 'other',
+]);
+
+export const userProjectSchema = z.object({
+  title: z.string().min(1).max(200),
+  summary: z.string().max(3000),
+  domainTags: z.array(z.string().max(50)),
+  techTags: z.array(z.string().max(50)),
+  roleTags: z.array(roleTagEnum).min(1),
+  difficultyLevel: z.enum(['beginner', 'intermediate', 'advanced']),
+  impactMetrics: z.record(z.unknown()).default({}),
+  recencyScore: z.number().min(0).max(100).default(50),
+  proofLinks: z.array(z.string().url()).default([]),
+  rawBullets: z.array(z.string().max(500)).min(1),
+});
+
+export const jdParseRequestSchema = z.object({
+  sourceUrl: z.string().url().optional(),
+  rawText: z.string().min(50).max(20000),
+  llmProvider: z.string().min(1),
+  llmModel: z.string().optional(),
+});
+
+export const projectMatchRunSchema = z.object({
+  jdProfileId: z.string().min(1),
+  topK: z.number().int().min(1).max(10).default(3),
+  llmProvider: z.string().min(1),
+  llmModel: z.string().optional(),
+});
