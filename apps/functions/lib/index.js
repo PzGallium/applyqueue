@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.applyApi = exports.projectMatchGetApi = exports.projectMatchRunApi = exports.jdParseApi = exports.projectsApi = exports.preferencesApi = exports.ingestTriggerApi = exports.ingestScheduled = exports.jobSourcesApi = exports.keyDeleteApi = exports.keyListApi = exports.keyValidateApi = exports.keyPutApi = exports.oauthCallbackApi = exports.oauthAuthorizeApi = void 0;
+exports.applyApi = exports.projectMatchGetApi = exports.projectMatchRunApi = exports.jdParseApi = exports.projectsApi = exports.rankedListApi = exports.preferencesApi = exports.ingestTriggerApi = exports.ingestScheduled = exports.jobSourcesApi = exports.keyDeleteApi = exports.keyListApi = exports.keyValidateApi = exports.keyPutApi = exports.oauthCallbackApi = exports.oauthAuthorizeApi = void 0;
 const app_1 = require("firebase-admin/app");
 (0, app_1.initializeApp)();
 // Keys & OAuth
@@ -21,6 +21,9 @@ Object.defineProperty(exports, "ingestTriggerApi", { enumerable: true, get: func
 // User Preferences
 var preferences_fn_1 = require("./functions/preferences.fn");
 Object.defineProperty(exports, "preferencesApi", { enumerable: true, get: function () { return preferences_fn_1.preferencesApi; } });
+// Ranked List (Dashboard)
+var ranked_list_fn_1 = require("./functions/ranked-list.fn");
+Object.defineProperty(exports, "rankedListApi", { enumerable: true, get: function () { return ranked_list_fn_1.rankedListApi; } });
 // Projects
 var projects_fn_1 = require("./functions/projects.fn");
 Object.defineProperty(exports, "projectsApi", { enumerable: true, get: function () { return projects_fn_1.projectsApi; } });

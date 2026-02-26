@@ -2,7 +2,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Settings, FileText, BarChart3 } from 'lucide-react';
+import { Settings, FileText } from 'lucide-react';
+import { JobRankList } from '@/components/dashboard/JobRankList';
 
 export function Dashboard() {
   const { user } = useAuth();
@@ -16,59 +17,46 @@ export function Dashboard() {
         </p>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <Card className="transition-colors hover:border-primary/30">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              职位排名
-            </CardTitle>
-            <CardDescription>
-              查看按匹配度排序的职位列表，apply N 一键申请。
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              功能开发中。请先在设置中连接 Google 以启用 AI 能力。
-            </p>
-          </CardContent>
-        </Card>
+      <div className="space-y-6">
+        <JobRankList />
 
-        <Card className="transition-colors hover:border-primary/30">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              申请队列
-            </CardTitle>
-            <CardDescription>
-              查看待处理的申请队列与进度。
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              功能开发中。
-            </p>
-          </CardContent>
-        </Card>
+        <div className="grid gap-6 sm:grid-cols-2">
+          <Card className="transition-colors hover:border-primary/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                申请队列
+              </CardTitle>
+              <CardDescription>
+                查看待处理的申请队列与进度。
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                功能开发中。
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card className="transition-colors hover:border-primary/30">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              设置
-            </CardTitle>
-            <CardDescription>
-              管理 AI 密钥、个人偏好。
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link to="/settings">
-              <Button variant="outline" size="sm">
-                前往设置
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
+          <Card className="transition-colors hover:border-primary/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                设置
+              </CardTitle>
+              <CardDescription>
+                管理职位来源、个人偏好与 AI 密钥。
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link to="/settings">
+                <Button variant="outline" size="sm">
+                  前往设置
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

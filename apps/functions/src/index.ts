@@ -21,6 +21,9 @@ export { ingestScheduled, ingestTriggerApi } from './functions/ingest.fn';
 // User Preferences
 export { preferencesApi } from './functions/preferences.fn';
 
+// Ranked List (Dashboard)
+export { rankedListApi } from './functions/ranked-list.fn';
+
 // Projects
 export { projectsApi } from './functions/projects.fn';
 
