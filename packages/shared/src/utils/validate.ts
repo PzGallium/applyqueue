@@ -67,6 +67,11 @@ export const applyRequestSchema = z.object({
   }),
 });
 
+/** MVP: POST /api/apply body — rankIndex only (1-based). */
+export const applyMvpRequestSchema = z.object({
+  rankIndex: z.number().int().min(1),
+});
+
 // ---------------------------------------------------------------------------
 // Key Management schemas
 // ---------------------------------------------------------------------------

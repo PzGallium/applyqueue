@@ -1,0 +1,99 @@
+/**
+ * Apply MVP — generate tailored Resume JSON from user profile + JD via LLM.
+ * Output is validated with Zod; do not fabricate experience/companies/dates.
+ */
+
+import type { UserProfile } from '@applyqueue/shared';
+import type { LlmClient } from '../../utils/llm';
+import { resumeContentSchema, type ResumeContent } from './types';
+
+const RESUME_JSON_INSTRUCTION = `You must respond with a single JSON object only, no markdown or code fences.
+The JSON must match this exact structure (all fields required unless noted):
+{
+  "headline": "string",
+  "summary": "string",
+  "experience": [{"company":"","title":"","date":"","bullets":[]}],
+  "education": [{"school":"","degree":"","major":"","date":"","gpa":null or "string"}],
+  "skills": ["string"],
+  "projects": [{"name":"","description":"","url":null or "","highlights":[]}]
+}
+Rules: Use ONLY the candidate's real companies, titles, and dates. Do not invent any experience or education.
+You may reword bullets and summary to emphasize JD-relevant skills. Keep dates and company/title names unchanged.`;
+
+export function buildResumePrompt(profile: UserProfile, jdText: string): string {
+  const profileBlob = JSON.stringify({
+    headline: profile.headline,
+    summary: profile.summary,
+    location: profile.location,
+    education: profile.education.map((e) => ({
+      school: e.school,
+      degree: e.degree,
+      major: e.major,
+      startDate: e.startDate,
+      endDate: e.endDate,
+      gpa: e.gpa,
+    })),
+    experience: profile.experience.map((e) => ({
+      company: e.company,
+      title: e.title,
+      startDate: e.startDate,
+      endDate: e.endDate,
+      description: e.description,
+      highlights: e.highlights,
+    })),
+    skills: profile.skills,
+    projects: profile.projects.map((p) => ({
+      name: p.name,
+      description: p.description,
+      url: p.url,
+      highlights: p.highlights,
+    })),
+  });
+
+  return `${RESUME_JSON_INSTRUCTION}
+
+Candidate profile (use only this data, do not invent):
+${profileBlob}
+
+Job description:
+${jdText.slice(0, 12000)}
+
+Output the tailored resume as a single JSON object:`;
+}
+
+/**
+ * Extract JSON from LLM text (strip markdown code block if present).
+ */
+function extractJson(text: string): string {
+  const trimmed = text.trim();
+  const codeBlock = /^```(?:json)?\s*([\s\S]*?)```$/m.exec(trimmed);
+  if (codeBlock) return codeBlock[1].trim();
+  return trimmed;
+}
+
+/**
+ * Generate resume content via LLM and validate. Throws on LLM or validation failure.
+ */
+export async function generateResumeContent(
+  llm: LlmClient,
+  profile: UserProfile,
+  jdText: string,
+  model?: string,
+): Promise<ResumeContent> {
+  const prompt = buildResumePrompt(profile, jdText);
+  const response = await llm.complete(prompt, model);
+  const raw = extractJson(response.text);
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new Error('LLM response is not valid JSON');
+  }
+
+  const result = resumeContentSchema.safeParse(parsed);
+  if (!result.success) {
+    throw new Error(`Resume schema validation failed: ${result.error.message}`);
+  }
+  return result.data;
+}
