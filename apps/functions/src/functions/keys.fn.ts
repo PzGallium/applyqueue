@@ -150,8 +150,8 @@ export const keyPutApi = onRequest(async (req, res) => {
 
   const { provider, apiKey } = parsed.data;
 
-  // Format validation
-  const providerConfig = { ...LLM_PROVIDERS, ...SEARCH_PROVIDERS }[provider];
+  const allConfigs: Record<string, { keyPattern?: RegExp; keyPrefix?: string }> = { ...LLM_PROVIDERS, ...SEARCH_PROVIDERS };
+  const providerConfig = allConfigs[provider];
   if (providerConfig?.keyPattern && !providerConfig.keyPattern.test(apiKey)) {
     error(res, 400, 'INVALID_KEY_FORMAT', `Key does not match expected format for ${provider}. Expected prefix: ${providerConfig.keyPrefix}`);
     return;
@@ -234,8 +234,7 @@ export const keyListApi = onRequest(async (req, res) => {
 
   const connections = await listConnections(user.uid);
 
-  // Merge with all available providers to show unconfigured ones too
-  const allProviders = { ...LLM_PROVIDERS, ...SEARCH_PROVIDERS };
+  const allProviders: Record<string, { name: string; supportedModes: unknown[]; primaryMode: unknown }> = { ...LLM_PROVIDERS, ...SEARCH_PROVIDERS };
   const result = Object.entries(allProviders).map(([key, config]) => {
     const existing = connections.find((c) => c.provider === key);
     return {

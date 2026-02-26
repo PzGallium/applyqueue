@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "lib": ["ES2022"],
+    "outDir": "./lib",
+    "rootDir": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "firebase-functions/v2/https": ["node_modules/firebase-functions/lib/v2/providers/https"],
+      "firebase-functions/v2/scheduler": ["node_modules/firebase-functions/lib/v2/providers/scheduler"]
+    },
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "declaration": true,
+    "sourceMap": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
+  },
+  "include": ["src/**/*"],
+  "exclude": ["lib", "node_modules"]
+}

@@ -1,4 +1,4 @@
-import type { Response } from 'firebase-functions/v2/https';
+import type { Response } from 'express';
 
 export function success(res: Response, status: number, data: unknown): void {
   res.status(status).json(data);

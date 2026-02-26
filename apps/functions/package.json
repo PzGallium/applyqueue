@@ -1,0 +1,25 @@
+{
+  "name": "@applyqueue/functions",
+  "version": "0.1.0",
+  "private": true,
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "clean": "rm -rf lib"
+  },
+  "dependencies": {
+    "@applyqueue/shared": "workspace:*",
+    "firebase-admin": "^13.0.0",
+    "firebase-functions": "^6.3.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "typescript": "^5.5.0"
+  },
+  "engines": {
+    "node": "20"
+  }
+}

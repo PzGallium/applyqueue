@@ -1,0 +1,56 @@
+"use strict";
+/**
+ * User Preferences API
+ *
+ * GET  /api/preferences — get current user preferences
+ * PUT  /api/preferences — update user preferences
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.preferencesApi = void 0;
+const https_1 = require("firebase-functions/v2/https");
+const firestore_1 = require("firebase-admin/firestore");
+const auth_1 = require("../middleware/auth");
+const response_1 = require("../utils/response");
+const db = (0, firestore_1.getFirestore)();
+exports.preferencesApi = (0, https_1.onRequest)(async (req, res) => {
+    const user = await (0, auth_1.verifyAuth)(req, res);
+    if (!user)
+        return;
+    const docRef = db.doc(`users/${user.uid}`);
+    if (req.method === 'GET') {
+        const doc = await docRef.get();
+        const prefs = doc.exists ? doc.data()?.preferences ?? {} : {};
+        (0, response_1.success)(res, 200, { preferences: prefs });
+        return;
+    }
+    if (req.method === 'PUT') {
+        const body = req.body;
+        if (!body || typeof body !== 'object') {
+            (0, response_1.error)(res, 400, 'INVALID_BODY', 'Request body must be a JSON object');
+            return;
+        }
+        const allowed = [
+            'targetRoles', 'targetLocations', 'minSalary', 'companySize',
+            'industries', 'excludeCompanies', 'autoRankWeights',
+            'roleKeywords', 'techKeywords', 'locationPriorities',
+            'targetLevels', 'priorityCompanies', 'batchSize',
+        ];
+        const update = {};
+        for (const key of allowed) {
+            if (key in body) {
+                update[`preferences.${key}`] = body[key];
+            }
+        }
+        if (Object.keys(update).length === 0) {
+            (0, response_1.error)(res, 400, 'NO_FIELDS', 'No valid preference fields provided');
+            return;
+        }
+        update['updatedAt'] = new Date().toISOString();
+        await docRef.set(update, { merge: true });
+        const fresh = (await docRef.get()).data()?.preferences ?? {};
+        (0, response_1.success)(res, 200, { preferences: fresh });
+        return;
+    }
+    (0, response_1.error)(res, 405, 'METHOD_NOT_ALLOWED', 'Use GET or PUT');
+});
+//# sourceMappingURL=preferences.fn.js.map
