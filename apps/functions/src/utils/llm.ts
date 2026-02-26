@@ -1,6 +1,6 @@
 /**
- * Minimal LLM client abstraction for BYOK usage.
- * Supports OpenAI and Anthropic via their REST APIs.
+ * LLM client abstraction — OAuth-first, BYOK-ready.
+ * Supports Gemini (OAuth/API Key), OpenAI, and Anthropic.
  */
 
 export interface LlmResponse {
@@ -12,6 +12,57 @@ export interface LlmResponse {
 export interface LlmClient {
   complete(prompt: string, model?: string): Promise<LlmResponse>;
 }
+
+// ---------------------------------------------------------------------------
+// Google Gemini — primary OAuth provider
+// ---------------------------------------------------------------------------
+
+class GeminiClient implements LlmClient {
+  constructor(private credential: string, private mode: 'oauth' | 'api_key' = 'oauth') {}
+
+  async complete(prompt: string, model = 'gemini-2.0-flash'): Promise<LlmResponse> {
+    const url = this.mode === 'api_key'
+      ? `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.credential}`
+      : `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (this.mode === 'oauth') {
+      headers['Authorization'] = `Bearer ${this.credential}`;
+    }
+
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.3 },
+      }),
+    });
+
+    if (!resp.ok) {
+      const body = await resp.text();
+      throw new Error(`Gemini API error ${resp.status}: ${body}`);
+    }
+
+    const data = await resp.json() as {
+      candidates: Array<{ content: { parts: Array<{ text: string }> } }>;
+      usageMetadata?: { promptTokenCount: number; candidatesTokenCount: number; totalTokenCount: number };
+    };
+
+    const totalTokens = data.usageMetadata?.totalTokenCount ?? 0;
+    const costPer1k = model.includes('pro') ? 0.00125 : 0.0001;
+
+    return {
+      text: data.candidates?.[0]?.content?.parts?.[0]?.text ?? '',
+      tokensUsed: totalTokens,
+      estimatedCost: (totalTokens / 1000) * costPer1k,
+    };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// OpenAI — BYOK API Key
+// ---------------------------------------------------------------------------
 
 class OpenAIClient implements LlmClient {
   constructor(private apiKey: string) {}
@@ -50,6 +101,10 @@ class OpenAIClient implements LlmClient {
     };
   }
 }
+
+// ---------------------------------------------------------------------------
+// Anthropic — BYOK API Key
+// ---------------------------------------------------------------------------
 
 class AnthropicClient implements LlmClient {
   constructor(private apiKey: string) {}
@@ -90,12 +145,27 @@ class AnthropicClient implements LlmClient {
   }
 }
 
-export function getLlmClient(provider: string, apiKey: string): LlmClient {
+// ---------------------------------------------------------------------------
+// Factory
+// ---------------------------------------------------------------------------
+
+/**
+ * Create an LLM client for a given provider.
+ * `credential` is either an API key or an OAuth access token.
+ * `mode` distinguishes how Gemini authenticates (OAuth token vs API key).
+ */
+export function getLlmClient(
+  provider: string,
+  credential: string,
+  mode: 'oauth' | 'api_key' = 'api_key',
+): LlmClient {
   switch (provider) {
+    case 'gemini':
+      return new GeminiClient(credential, mode);
     case 'openai':
-      return new OpenAIClient(apiKey);
+      return new OpenAIClient(credential);
     case 'anthropic':
-      return new AnthropicClient(apiKey);
+      return new AnthropicClient(credential);
     default:
       throw new Error(`Unsupported LLM provider: ${provider}`);
   }

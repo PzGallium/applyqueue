@@ -67,9 +67,31 @@ export const applyRequestSchema = z.object({
   }),
 });
 
+// ---------------------------------------------------------------------------
+// Key Management schemas
+// ---------------------------------------------------------------------------
+
+const providerEnum = z.enum(['gemini', 'openai', 'anthropic', 'brave']);
+
 export const keyUpdateSchema = z.object({
-  provider: z.string().min(1).max(50),
+  provider: providerEnum,
   apiKey: z.string().min(10).max(500),
+});
+
+export const oauthCallbackSchema = z.object({
+  provider: providerEnum,
+  code: z.string().min(1),
+  state: z.string().min(1),
+  redirectUri: z.string().url(),
+});
+
+export const keyDeleteSchema = z.object({
+  provider: providerEnum,
+});
+
+export const keyValidateSchema = z.object({
+  provider: providerEnum,
+  apiKey: z.string().min(10).max(500).optional(),
 });
 
 export const applicationUpdateSchema = z.object({
