@@ -44,3 +44,7 @@ export declare const keyListApi: import("firebase-functions/v2/https").HttpsFunc
  * For OAuth, also revokes the token with Google.
  */
 export declare const keyDeleteApi: import("firebase-functions/v2/https").HttpsFunction;
+/**
+ * Single handler for /api/keys (GET, PUT, DELETE) for Hosting rewrites.
+ */
+export declare const keyKeysApi: import("firebase-functions/v2/https").HttpsFunction;

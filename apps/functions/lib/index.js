@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.applicationsApi = exports.applyApi = exports.projectMatchGetApi = exports.projectMatchRunApi = exports.jdParseApi = exports.projectsApi = exports.rankedListApi = exports.preferencesApi = exports.ingestTriggerApi = exports.ingestScheduled = exports.jobSourcesApi = exports.keyDeleteApi = exports.keyListApi = exports.keyValidateApi = exports.keyPutApi = exports.oauthCallbackApi = exports.oauthAuthorizeApi = void 0;
+exports.api = exports.applicationsApi = exports.applyApi = exports.projectMatchGetApi = exports.projectMatchRunApi = exports.jdParseApi = exports.projectsApi = exports.rankedListApi = exports.preferencesApi = exports.ingestTriggerApi = exports.ingestScheduled = exports.jobSourcesApi = exports.keyKeysApi = exports.keyDeleteApi = exports.keyListApi = exports.keyValidateApi = exports.keyPutApi = exports.oauthCallbackApi = exports.oauthAuthorizeApi = void 0;
 const path_1 = __importDefault(require("path"));
 const dotenv_1 = require("dotenv");
 // Load .env.local / .env from project root when running (e.g. Firebase emulator)
@@ -19,6 +19,7 @@ Object.defineProperty(exports, "keyPutApi", { enumerable: true, get: function ()
 Object.defineProperty(exports, "keyValidateApi", { enumerable: true, get: function () { return keys_fn_1.keyValidateApi; } });
 Object.defineProperty(exports, "keyListApi", { enumerable: true, get: function () { return keys_fn_1.keyListApi; } });
 Object.defineProperty(exports, "keyDeleteApi", { enumerable: true, get: function () { return keys_fn_1.keyDeleteApi; } });
+Object.defineProperty(exports, "keyKeysApi", { enumerable: true, get: function () { return keys_fn_1.keyKeysApi; } });
 // Job Sources
 var job_sources_fn_1 = require("./functions/job-sources.fn");
 Object.defineProperty(exports, "jobSourcesApi", { enumerable: true, get: function () { return job_sources_fn_1.jobSourcesApi; } });
@@ -45,4 +46,7 @@ var apply_fn_1 = require("./functions/apply.fn");
 Object.defineProperty(exports, "applyApi", { enumerable: true, get: function () { return apply_fn_1.applyApi; } });
 var applications_fn_1 = require("./functions/applications.fn");
 Object.defineProperty(exports, "applicationsApi", { enumerable: true, get: function () { return applications_fn_1.applicationsApi; } });
+// Catch-all for /api/** (must be last)
+var api_fn_1 = require("./functions/api.fn");
+Object.defineProperty(exports, "api", { enumerable: true, get: function () { return api_fn_1.api; } });
 //# sourceMappingURL=index.js.map
