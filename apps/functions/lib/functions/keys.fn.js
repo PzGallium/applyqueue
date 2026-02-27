@@ -137,7 +137,18 @@ exports.keyPutApi = (0, https_1.onRequest)(async (req, res) => {
         (0, response_1.error)(res, 400, 'INVALID_KEY_FORMAT', `Key does not match expected format for ${provider}. Expected prefix: ${providerConfig.keyPrefix}`);
         return;
     }
-    await (0, credentialResolver_1.storeApiKeyConnection)(user.uid, provider, apiKey);
+    try {
+        await (0, credentialResolver_1.storeApiKeyConnection)(user.uid, provider, apiKey);
+    }
+    catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes('ENCRYPTION_MASTER_KEY')) {
+            (0, response_1.error)(res, 503, 'SERVER_CONFIG_ERROR', 'Encryption is not configured. Set ENCRYPTION_MASTER_KEY in the environment.');
+            return;
+        }
+        (0, response_1.error)(res, 500, 'SAVE_FAILED', 'Failed to save API key. Please try again.');
+        return;
+    }
     (0, response_1.success)(res, 200, {
         provider,
         mode: 'api_key',
@@ -221,12 +232,13 @@ exports.keyListApi = (0, https_1.onRequest)(async (req, res) => {
             supportedModes: config.supportedModes,
             primaryMode: config.primaryMode,
             connected: !!existing,
+            configured: !!existing,
             mode: existing?.mode ?? null,
             displayLabel: existing?.displayLabel ?? null,
             updatedAt: existing?.updatedAt ?? null,
         };
     });
-    (0, response_1.success)(res, 200, { providers: result });
+    (0, response_1.success)(res, 200, { keys: result, providers: result });
 });
 /**
  * DELETE /api/keys

@@ -37,6 +37,13 @@ export async function uploadResumePdf(
     expires: expiresAt,
   });
 
+  return {
+    path,
+    downloadUrl,
+    expiresAt: expiresAt.toISOString(),
+  };
+}
+
 /**
  * Get a new signed download URL for an existing resume PDF (e.g. for idempotent replay).
  * Path must already exist: resumes/{userId}/{applyId}.pdf

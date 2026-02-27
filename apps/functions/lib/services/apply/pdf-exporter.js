@@ -1,6 +1,9 @@
 "use strict";
 /**
  * Apply MVP — render ResumeContent to HTML and export to PDF (Letter).
+ *
+ * Uses Puppeteer (bundled Chromium). For Firebase Functions deployment:
+ * consider size/cold-start/memory — see docs/apply-mvp-delivery.md § 六、Puppeteer 部署风险.
  */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;

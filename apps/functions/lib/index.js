@@ -1,6 +1,14 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.applyApi = exports.projectMatchGetApi = exports.projectMatchRunApi = exports.jdParseApi = exports.projectsApi = exports.rankedListApi = exports.preferencesApi = exports.ingestTriggerApi = exports.ingestScheduled = exports.jobSourcesApi = exports.keyDeleteApi = exports.keyListApi = exports.keyValidateApi = exports.keyPutApi = exports.oauthCallbackApi = exports.oauthAuthorizeApi = void 0;
+exports.applicationsApi = exports.applyApi = exports.projectMatchGetApi = exports.projectMatchRunApi = exports.jdParseApi = exports.projectsApi = exports.rankedListApi = exports.preferencesApi = exports.ingestTriggerApi = exports.ingestScheduled = exports.jobSourcesApi = exports.keyDeleteApi = exports.keyListApi = exports.keyValidateApi = exports.keyPutApi = exports.oauthCallbackApi = exports.oauthAuthorizeApi = void 0;
+const path_1 = __importDefault(require("path"));
+const dotenv_1 = require("dotenv");
+// Load .env.local / .env from project root when running (e.g. Firebase emulator)
+(0, dotenv_1.config)({ path: path_1.default.join(__dirname, '..', '..', '..', '.env.local') });
+(0, dotenv_1.config)({ path: path_1.default.join(__dirname, '..', '..', '..', '.env') });
 const app_1 = require("firebase-admin/app");
 (0, app_1.initializeApp)();
 // Keys & OAuth
@@ -35,4 +43,6 @@ Object.defineProperty(exports, "projectMatchGetApi", { enumerable: true, get: fu
 // Apply
 var apply_fn_1 = require("./functions/apply.fn");
 Object.defineProperty(exports, "applyApi", { enumerable: true, get: function () { return apply_fn_1.applyApi; } });
+var applications_fn_1 = require("./functions/applications.fn");
+Object.defineProperty(exports, "applicationsApi", { enumerable: true, get: function () { return applications_fn_1.applicationsApi; } });
 //# sourceMappingURL=index.js.map

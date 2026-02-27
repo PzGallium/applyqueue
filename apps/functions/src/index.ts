@@ -1,3 +1,10 @@
+import path from 'path';
+import { config as loadEnv } from 'dotenv';
+
+// Load .env.local / .env from project root when running (e.g. Firebase emulator)
+loadEnv({ path: path.join(__dirname, '..', '..', '..', '.env.local') });
+loadEnv({ path: path.join(__dirname, '..', '..', '..', '.env') });
+
 import { initializeApp } from 'firebase-admin/app';
 
 initializeApp();

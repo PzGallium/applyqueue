@@ -6,3 +6,4 @@ export { rankedListApi } from './functions/ranked-list.fn';
 export { projectsApi } from './functions/projects.fn';
 export { jdParseApi, projectMatchRunApi, projectMatchGetApi, } from './functions/project-intel.fn';
 export { applyApi } from './functions/apply.fn';
+export { applicationsApi } from './functions/applications.fn';

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@applyqueue/shared": "workspace:*",
+    "dotenv": "^17.3.1",
     "firebase-admin": "^13.0.0",
     "firebase-functions": "^6.3.0",
     "puppeteer": "^23.0.0",

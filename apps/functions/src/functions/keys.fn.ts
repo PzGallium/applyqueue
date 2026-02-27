@@ -157,7 +157,17 @@ export const keyPutApi = onRequest(async (req, res) => {
     return;
   }
 
-  await storeApiKeyConnection(user.uid, provider, apiKey);
+  try {
+    await storeApiKeyConnection(user.uid, provider, apiKey);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes('ENCRYPTION_MASTER_KEY')) {
+      error(res, 503, 'SERVER_CONFIG_ERROR', 'Encryption is not configured. Set ENCRYPTION_MASTER_KEY in the environment.');
+      return;
+    }
+    error(res, 500, 'SAVE_FAILED', 'Failed to save API key. Please try again.');
+    return;
+  }
 
   success(res, 200, {
     provider,
@@ -243,13 +253,14 @@ export const keyListApi = onRequest(async (req, res) => {
       supportedModes: config.supportedModes,
       primaryMode: config.primaryMode,
       connected: !!existing,
+      configured: !!existing,
       mode: existing?.mode ?? null,
       displayLabel: existing?.displayLabel ?? null,
       updatedAt: existing?.updatedAt ?? null,
     };
   });
 
-  success(res, 200, { providers: result });
+  success(res, 200, { keys: result, providers: result });
 });
 
 /**

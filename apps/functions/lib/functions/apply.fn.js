@@ -22,6 +22,10 @@ const types_1 = require("../services/apply/types");
 const db = (0, firestore_1.getFirestore)();
 const MVP_LLM_PROVIDER = 'gemini';
 const MIN_JD_LENGTH = 50;
+/** 1-hour bucket for idempotency: same user + rankIndex within same hour reuses or conflicts. */
+function getIdempotencyDateBucket() {
+    return new Date().toISOString().slice(0, 13);
+}
 async function updateApplicationStatus(applyId, status, extra = {}) {
     const ref = db.collection('applications').doc(applyId);
     await ref.update({
@@ -30,7 +34,7 @@ async function updateApplicationStatus(applyId, status, extra = {}) {
         ...extra,
     });
 }
-exports.applyApi = (0, https_1.onRequest)({ timeoutSeconds: 300 }, async (req, res) => {
+exports.applyApi = (0, https_1.onRequest)({ timeoutSeconds: 300, memory: '1GiB', cpu: 1 }, async (req, res) => {
     if (req.method !== 'POST') {
         (0, response_1.error)(res, 405, 'METHOD_NOT_ALLOWED', 'Use POST');
         return;
@@ -43,7 +47,8 @@ exports.applyApi = (0, https_1.onRequest)({ timeoutSeconds: 300 }, async (req, r
         (0, response_1.error)(res, 400, types_1.APPLY_ERROR_CODES.INVALID_INPUT, parsed.error.message);
         return;
     }
-    const { rankIndex } = parsed.data;
+    const { rankIndex, idempotencyKey: bodyIdempotencyKey } = parsed.data;
+    const idempotencyKey = bodyIdempotencyKey ?? `${user.uid}:${rankIndex}:${getIdempotencyDateBucket()}`;
     let applyId;
     let jobId;
     let job;
@@ -89,6 +94,48 @@ exports.applyApi = (0, https_1.onRequest)({ timeoutSeconds: 300 }, async (req, r
             (0, response_1.error)(res, 404, types_1.APPLY_ERROR_CODES.PROFILE_NOT_FOUND, 'User profile missing or incomplete');
             return;
         }
+        const existingSnap = await db
+            .collection('applications')
+            .where('userId', '==', user.uid)
+            .where('idempotencyKey', '==', idempotencyKey)
+            .orderBy('createdAt', 'desc')
+            .limit(1)
+            .get();
+        if (!existingSnap.empty) {
+            const existing = existingSnap.docs[0];
+            const data = existing.data();
+            const existingStatus = data.status;
+            if (existingStatus === 'done') {
+                const existingJobId = data.jobId;
+                const jobDocForExisting = await db.doc(`jobs/${existingJobId}`).get();
+                const jobDataExisting = jobDocForExisting.exists ? jobDocForExisting.data() : null;
+                let artifact;
+                try {
+                    artifact = await (0, artifact_store_1.getResumeDownloadUrl)(user.uid, existing.id);
+                }
+                catch {
+                    (0, response_1.error)(res, 500, types_1.APPLY_ERROR_CODES.STORAGE_UPLOAD_FAILED, 'Could not get download URL for existing resume');
+                    return;
+                }
+                const bodyExisting = {
+                    applyId: existing.id,
+                    job: {
+                        id: existingJobId,
+                        title: jobDataExisting?.title ?? '',
+                        company: jobDataExisting?.company ?? '',
+                        sourceUrl: jobDataExisting?.url ?? null,
+                    },
+                    status: 'done',
+                    artifact: { format: 'pdf', path: artifact.path, downloadUrl: artifact.downloadUrl, expiresAt: artifact.expiresAt },
+                };
+                (0, response_1.success)(res, 200, bodyExisting);
+                return;
+            }
+            if (existingStatus !== 'failed') {
+                (0, response_1.error)(res, 409, types_1.APPLY_ERROR_CODES.APPLICATION_IN_PROGRESS, `Application ${existing.id} already in progress (${existingStatus}). Use GET /api/applications/${existing.id} to poll.`);
+                return;
+            }
+        }
         const appRef = db.collection('applications').doc();
         const applicationId = appRef.id;
         applyId = applicationId;
@@ -96,6 +143,7 @@ exports.applyApi = (0, https_1.onRequest)({ timeoutSeconds: 300 }, async (req, r
             userId: user.uid,
             rankIndex,
             jobId,
+            idempotencyKey,
             status: 'queued',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -110,10 +158,10 @@ exports.applyApi = (0, https_1.onRequest)({ timeoutSeconds: 300 }, async (req, r
         }
         if (!apiKey) {
             await updateApplicationStatus(applicationId, 'failed', {
-                errorCode: types_1.APPLY_ERROR_CODES.INTERNAL_ERROR,
+                errorCode: types_1.APPLY_ERROR_CODES.CREDENTIAL_NOT_CONFIGURED,
                 errorMessage: 'Configure LLM API key for Gemini first',
             });
-            (0, response_1.error)(res, 400, types_1.APPLY_ERROR_CODES.INTERNAL_ERROR, 'Configure LLM API key for Gemini first');
+            (0, response_1.error)(res, 400, types_1.APPLY_ERROR_CODES.CREDENTIAL_NOT_CONFIGURED, 'Configure LLM API key for Gemini first');
             return;
         }
         const llm = (0, llm_1.getLlmClient)(MVP_LLM_PROVIDER, apiKey);
