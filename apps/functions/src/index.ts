@@ -28,8 +28,14 @@ export { ingestScheduled, ingestTriggerApi } from './functions/ingest.fn';
 // User Preferences
 export { preferencesApi } from './functions/preferences.fn';
 
-// Ranked List (Dashboard)
+// Ranked List (Dashboard) — deprecated
 export { rankedListApi } from './functions/ranked-list.fn';
+
+// Resume Refine
+export { resumeRefineApi } from './functions/resume-refine.fn';
+
+// Identity Pool
+export { identityPoolApi } from './functions/identity-pool.fn';
 
 // Projects
 export { projectsApi } from './functions/projects.fn';

@@ -134,6 +134,37 @@ export const jdParseRequestSchema = z.object({
   llmModel: z.string().optional(),
 });
 
+export const identityCreateSchema = z.object({
+  name: z.string().min(1).max(100),
+  email: z.string().email().max(200),
+  phone: z.string().min(1).max(30),
+  label: z.string().max(50).default(''),
+});
+
+export const identityUpdateSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1).max(100).optional(),
+  email: z.string().email().max(200).optional(),
+  phone: z.string().min(1).max(30).optional(),
+  label: z.string().max(50).optional(),
+});
+
+export const identityDeleteSchema = z.object({
+  id: z.string().min(1),
+});
+
+export const identitySetDefaultSchema = z.object({
+  id: z.string().min(1).nullable(),
+});
+
+export const resumeRefineRequestSchema = z.object({
+  rawJdText: z.string().min(50).max(50000),
+  identityId: z.string().max(100).optional(),
+  useProjectPool: z.boolean().default(true),
+  llmProvider: z.string().min(1).default('gemini'),
+  llmModel: z.string().max(100).optional(),
+});
+
 export const projectMatchRunSchema = z.object({
   jdProfileId: z.string().min(1),
   topK: z.number().int().min(1).max(10).default(3),

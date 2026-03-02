@@ -5,19 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 
-const LEVEL_OPTIONS = [
-  { value: 'new_grad', label: 'New Grad' },
-  { value: 'entry', label: 'Entry Level' },
-  { value: 'intern', label: 'Intern' },
-] as const;
-
-const DEFAULT_BIG_COMPANIES = [
-  'Google', 'Meta', 'Apple', 'Amazon', 'Microsoft', 'Netflix',
-  'Uber', 'Airbnb', 'Stripe', 'Coinbase', 'ByteDance', 'Tesla',
-  'Oracle', 'Salesforce', 'Adobe', 'LinkedIn', 'Snap', 'Spotify',
-  'Databricks', 'Snowflake', 'Palantir', 'Bloomberg',
-];
-
 function TagList({
   items,
   onChange,
@@ -129,84 +116,27 @@ function TagList({
   );
 }
 
-function LevelPicker({
-  selected,
-  onChange,
-}: {
-  selected: string[];
-  onChange: (levels: string[]) => void;
-}) {
-  const toggle = (val: string) => {
-    if (selected.includes(val)) {
-      onChange(selected.filter((v) => v !== val));
-    } else {
-      onChange([...selected, val]);
-    }
-  };
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      {LEVEL_OPTIONS.map((opt) => (
-        <button
-          key={opt.value}
-          type="button"
-          onClick={() => toggle(opt.value)}
-          className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
-            selected.includes(opt.value)
-              ? 'border-primary bg-primary/10 text-primary'
-              : 'border-input hover:bg-accent'
-          }`}
-        >
-          {opt.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 export function PreferencesForm() {
   const { getPreferences, savePreferences, loading, error } = usePreferences();
   const [saved, setSaved] = useState(false);
 
   const [roleKeywords, setRoleKeywords] = useState<string[]>([]);
   const [techKeywords, setTechKeywords] = useState<string[]>([]);
-  const [locationPriorities, setLocationPriorities] = useState<string[]>([]);
-  const [targetLevels, setTargetLevels] = useState<string[]>([]);
-  const [priorityCompanies, setPriorityCompanies] = useState<string[]>([]);
-  const [batchSizeInput, setBatchSizeInput] = useState('10');
 
   useEffect(() => {
     getPreferences().then((p) => {
       if (p.roleKeywords?.length) setRoleKeywords(p.roleKeywords);
       if (p.techKeywords?.length) setTechKeywords(p.techKeywords);
-      if (p.locationPriorities?.length) setLocationPriorities(p.locationPriorities);
-      if (p.targetLevels?.length) setTargetLevels(p.targetLevels);
-      if (p.priorityCompanies?.length) setPriorityCompanies(p.priorityCompanies);
-      setBatchSizeInput(p.batchSize != null && p.batchSize > 0 ? String(p.batchSize) : '');
     });
   }, [getPreferences]);
 
   const handleSave = async () => {
     setSaved(false);
-    const batchSizeNum = Math.min(50, Math.max(1, Number(batchSizeInput) || 1));
-    const ok = await savePreferences({
-      roleKeywords,
-      techKeywords,
-      locationPriorities,
-      targetLevels,
-      priorityCompanies,
-      batchSize: batchSizeNum,
-    });
+    const ok = await savePreferences({ roleKeywords, techKeywords });
     if (ok) {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     }
-  };
-
-  const addDefaultBigCompanies = () => {
-    const existing = new Set(priorityCompanies.map((c) => c.toLowerCase()));
-    const toAdd = DEFAULT_BIG_COMPANIES.filter((c) => !existing.has(c.toLowerCase()));
-    setPriorityCompanies([...priorityCompanies, ...toAdd]);
   };
 
   return (
@@ -216,10 +146,10 @@ export function PreferencesForm() {
           <div>
             <CardTitle className="flex items-center gap-2">
               <Settings2 className="h-5 w-5" />
-              职位偏好
+              简历偏好
             </CardTitle>
             <CardDescription>
-              配置岗位关键词、地点、级别等偏好，系统将按优先级排序推送。顺序越靠前优先级越高。
+              目标岗位画像，用于精修时匹配合适的项目与经历。配置常申岗位类型与技术关键词。
             </CardDescription>
           </div>
           <Button
@@ -236,9 +166,9 @@ export function PreferencesForm() {
       <CardContent className="space-y-6">
         {/* Role Keywords */}
         <section>
-          <h3 className="mb-1.5 text-sm font-medium">岗位关键词 <span className="text-muted-foreground font-normal">（按优先级排序）</span></h3>
+          <h3 className="mb-1.5 text-sm font-medium">常申岗位类型 <span className="text-muted-foreground font-normal">（按优先级排序）</span></h3>
           <p className="mb-2 text-xs text-muted-foreground">
-            职位标题/描述中匹配这些关键词的岗位会被优先推荐。第一个优先级最高。
+            精修简历时优先匹配这些岗位类型的项目与经历。第一个优先级最高。
           </p>
           <TagList
             items={roleKeywords}
@@ -252,75 +182,12 @@ export function PreferencesForm() {
         <section>
           <h3 className="mb-1.5 text-sm font-medium">技术关键词</h3>
           <p className="mb-2 text-xs text-muted-foreground">
-            JD 中包含这些技术的岗位得分更高（不区分大小写）。
+            精修时强调简历中与这些技术相关的内容。
           </p>
           <TagList
             items={techKeywords}
             onChange={setTechKeywords}
             placeholder="如：Java, Distributed Systems"
-          />
-        </section>
-
-        {/* Location Priorities */}
-        <section>
-          <h3 className="mb-1.5 text-sm font-medium">地点优先级 <span className="text-muted-foreground font-normal">（按优先级排序）</span></h3>
-          <p className="mb-2 text-xs text-muted-foreground">
-            "Remote" 会匹配远程岗位。具体城市按顺序降权。
-          </p>
-          <TagList
-            items={locationPriorities}
-            onChange={setLocationPriorities}
-            placeholder="如：Remote"
-            ordered
-          />
-        </section>
-
-        {/* Target Levels */}
-        <section>
-          <h3 className="mb-1.5 text-sm font-medium">目标级别</h3>
-          <LevelPicker selected={targetLevels} onChange={setTargetLevels} />
-        </section>
-
-        {/* Priority Companies */}
-        <section>
-          <h3 className="mb-1.5 text-sm font-medium">
-            高优先公司 <span className="text-muted-foreground font-normal">（大厂优先推送）</span>
-          </h3>
-          <p className="mb-2 text-xs text-muted-foreground">
-            这些公司的 New Grad/Intern 岗位会获得最高优先推荐。
-          </p>
-          <TagList
-            items={priorityCompanies}
-            onChange={setPriorityCompanies}
-            placeholder="如：Google"
-          />
-          {priorityCompanies.length === 0 && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="mt-2"
-              onClick={addDefaultBigCompanies}
-            >
-              一键添加常见大厂
-            </Button>
-          )}
-        </section>
-
-        {/* Batch Size */}
-        <section>
-          <h3 className="mb-1.5 text-sm font-medium">每批推送数量</h3>
-          <p className="mb-2 text-xs text-muted-foreground">
-            每天推送两次（早 9 点 + 晚 9 点），每次推送 Top N 条。可清空后输入 1～50。
-          </p>
-          <Input
-            type="number"
-            min={1}
-            max={50}
-            placeholder="1～50"
-            value={batchSizeInput}
-            onChange={(e) => setBatchSizeInput(e.target.value)}
-            className="w-24"
           />
         </section>
 

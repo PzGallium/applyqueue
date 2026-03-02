@@ -3,6 +3,7 @@ import { Shell } from '@/components/layout/Shell';
 import { Landing } from '@/pages/Landing';
 import { Login } from '@/pages/Login';
 import { Dashboard } from '@/pages/Dashboard';
+import { Refine } from '@/pages/Refine';
 import { Settings } from '@/pages/Settings';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -32,6 +33,14 @@ export function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/refine"
+            element={
+              <ProtectedRoute>
+                <Refine />
               </ProtectedRoute>
             }
           />

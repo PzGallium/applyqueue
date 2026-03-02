@@ -15,9 +15,8 @@
  *   DELETE /api/keys          — remove a provider connection
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.keyKeysApi = exports.keyDeleteApi = exports.keyListApi = exports.keyValidateApi = exports.keyPutApi = exports.oauthCallbackApi = exports.oauthAuthorizeApi = void 0;
+exports.keyDeleteApi = exports.keyListApi = exports.keyValidateApi = exports.keyPutApi = exports.oauthCallbackApi = exports.oauthAuthorizeApi = void 0;
 const https_1 = require("firebase-functions/v2/https");
-const params_1 = require("firebase-functions/params");
 const firestore_1 = require("firebase-admin/firestore");
 const shared_1 = require("@applyqueue/shared");
 const shared_2 = require("@applyqueue/shared");
@@ -27,19 +26,6 @@ const llm_1 = require("../utils/llm");
 const credentialResolver_1 = require("../services/keys/credentialResolver");
 const oauthService_1 = require("../services/keys/oauthService");
 const db = (0, firestore_1.getFirestore)();
-// 生产: Secret Manager；本地模拟器: apps/functions/.secret.local（见 README）
-const encryptionMasterKey = (0, params_1.defineSecret)('ENCRYPTION_MASTER_KEY');
-const keysOpts = { secrets: [encryptionMasterKey] };
-function injectEncryptionKey() {
-    try {
-        const v = encryptionMasterKey.value();
-        if (v)
-            process.env.ENCRYPTION_MASTER_KEY = v;
-    }
-    catch {
-        // 模拟器未配置 .secret.local 时忽略
-    }
-}
 // =========================================================================
 // OAuth endpoints
 // =========================================================================
@@ -78,8 +64,7 @@ exports.oauthAuthorizeApi = (0, https_1.onRequest)(async (req, res) => {
  * POST /api/keys/oauth/callback
  * Handles the OAuth callback: exchanges code for tokens, stores encrypted.
  */
-exports.oauthCallbackApi = (0, https_1.onRequest)(keysOpts, async (req, res) => {
-    injectEncryptionKey();
+exports.oauthCallbackApi = (0, https_1.onRequest)(async (req, res) => {
     if (req.method !== 'POST') {
         (0, response_1.error)(res, 405, 'METHOD_NOT_ALLOWED', 'Use POST');
         return;
@@ -128,7 +113,11 @@ exports.oauthCallbackApi = (0, https_1.onRequest)(keysOpts, async (req, res) => 
 // =========================================================================
 // BYOK API Key endpoints
 // =========================================================================
-async function handleKeyPut(req, res) {
+/**
+ * PUT /api/keys
+ * Save an API key (encrypted). For advanced users.
+ */
+exports.keyPutApi = (0, https_1.onRequest)(async (req, res) => {
     if (req.method !== 'PUT') {
         (0, response_1.error)(res, 405, 'METHOD_NOT_ALLOWED', 'Use PUT');
         return;
@@ -166,21 +155,12 @@ async function handleKeyPut(req, res) {
         connected: true,
         updatedAt: new Date().toISOString(),
     });
-}
-/**
- * PUT /api/keys
- * Save an API key (encrypted). For advanced users.
- */
-exports.keyPutApi = (0, https_1.onRequest)(keysOpts, async (req, res) => {
-    injectEncryptionKey();
-    return handleKeyPut(req, res);
 });
 /**
  * POST /api/keys/validate
  * Validate an API key by making a minimal API call.
  */
-exports.keyValidateApi = (0, https_1.onRequest)(keysOpts, async (req, res) => {
-    injectEncryptionKey();
+exports.keyValidateApi = (0, https_1.onRequest)(async (req, res) => {
     if (req.method !== 'POST') {
         (0, response_1.error)(res, 405, 'METHOD_NOT_ALLOWED', 'Use POST');
         return;
@@ -230,7 +210,11 @@ exports.keyValidateApi = (0, https_1.onRequest)(keysOpts, async (req, res) => {
 // =========================================================================
 // Shared endpoints
 // =========================================================================
-async function handleKeyList(req, res) {
+/**
+ * GET /api/keys
+ * List all configured providers (without exposing secrets).
+ */
+exports.keyListApi = (0, https_1.onRequest)(async (req, res) => {
     if (req.method !== 'GET') {
         (0, response_1.error)(res, 405, 'METHOD_NOT_ALLOWED', 'Use GET');
         return;
@@ -255,16 +239,13 @@ async function handleKeyList(req, res) {
         };
     });
     (0, response_1.success)(res, 200, { keys: result, providers: result });
-}
-/**
- * GET /api/keys
- * List all configured providers (without exposing secrets).
- */
-exports.keyListApi = (0, https_1.onRequest)(keysOpts, async (req, res) => {
-    injectEncryptionKey();
-    return handleKeyList(req, res);
 });
-async function handleKeyDelete(req, res) {
+/**
+ * DELETE /api/keys
+ * Remove a provider connection (API key or OAuth).
+ * For OAuth, also revokes the token with Google.
+ */
+exports.keyDeleteApi = (0, https_1.onRequest)(async (req, res) => {
     if (req.method !== 'DELETE') {
         (0, response_1.error)(res, 405, 'METHOD_NOT_ALLOWED', 'Use DELETE');
         return;
@@ -292,27 +273,5 @@ async function handleKeyDelete(req, res) {
         return;
     }
     (0, response_1.success)(res, 200, { provider, deleted: true });
-}
-/**
- * DELETE /api/keys
- * Remove a provider connection (API key or OAuth).
- * For OAuth, also revokes the token with Google.
- */
-exports.keyDeleteApi = (0, https_1.onRequest)(keysOpts, async (req, res) => {
-    injectEncryptionKey();
-    return handleKeyDelete(req, res);
-});
-/**
- * Single handler for /api/keys (GET, PUT, DELETE) for Hosting rewrites.
- */
-exports.keyKeysApi = (0, https_1.onRequest)(keysOpts, async (req, res) => {
-    injectEncryptionKey();
-    if (req.method === 'PUT')
-        return handleKeyPut(req, res);
-    if (req.method === 'GET')
-        return handleKeyList(req, res);
-    if (req.method === 'DELETE')
-        return handleKeyDelete(req, res);
-    (0, response_1.error)(res, 405, 'METHOD_NOT_ALLOWED', 'Use GET, PUT, or DELETE');
 });
 //# sourceMappingURL=keys.fn.js.map
