@@ -5,6 +5,9 @@ dist/
 .next/
 .cache/
 
+# Cursor IDE
+.cursor/
+
 *.local
 .env
 .env.local
