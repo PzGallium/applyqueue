@@ -53,7 +53,7 @@ function escapeHtml(s) {
 }
 function resumeContentToHtml(content) {
     const sections = [];
-    sections.push(`<div class="section header"><h1>${escapeHtml(content.headline)}</h1><p class="summary">${escapeHtml(content.summary)}</p></div>`);
+    sections.push(`<div class="section header"><h1>${escapeHtml(content.headline)}</h1></div>`);
     if (content.experience.length > 0) {
         sections.push('<div class="section"><h2>Experience</h2>');
         for (const exp of content.experience) {
@@ -104,7 +104,6 @@ function resumeContentToHtml(content) {
     body { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; line-height: 1.35; color: #222; margin: 0; padding: 0; }
     .section { page-break-inside: avoid; margin-bottom: 0.9em; }
     .header h1 { font-size: 18pt; margin: 0 0 0.25em 0; }
-    .summary { margin: 0; }
     h2 { font-size: 12pt; margin: 0.5em 0 0.25em 0; border-bottom: 1px solid #333; padding-bottom: 2px; }
     .block { margin: 0.2em 0; }
     .date { color: #555; font-size: 10pt; }

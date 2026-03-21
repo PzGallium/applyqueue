@@ -19,8 +19,10 @@ exports.preferencesApi = (0, https_1.onRequest)(async (req, res) => {
     const docRef = db.doc(`users/${user.uid}`);
     if (req.method === 'GET') {
         const doc = await docRef.get();
-        const prefs = doc.exists ? doc.data()?.preferences ?? {} : {};
-        (0, response_1.success)(res, 200, { preferences: prefs });
+        const data = doc.exists ? doc.data() : null;
+        const prefs = data?.preferences ?? {};
+        const profile = data?.profile ?? null;
+        (0, response_1.success)(res, 200, { preferences: prefs, profile });
         return;
     }
     if (req.method === 'PUT') {

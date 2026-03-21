@@ -21,7 +21,7 @@ export function resumeContentToHtml(content: ResumeContent): string {
   const sections: string[] = [];
 
   sections.push(
-    `<div class="section header"><h1>${escapeHtml(content.headline)}</h1><p class="summary">${escapeHtml(content.summary)}</p></div>`,
+    `<div class="section header"><h1>${escapeHtml(content.headline)}</h1></div>`,
   );
 
   if (content.experience.length > 0) {
@@ -84,7 +84,6 @@ export function resumeContentToHtml(content: ResumeContent): string {
     body { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; line-height: 1.35; color: #222; margin: 0; padding: 0; }
     .section { page-break-inside: avoid; margin-bottom: 0.9em; }
     .header h1 { font-size: 18pt; margin: 0 0 0.25em 0; }
-    .summary { margin: 0; }
     h2 { font-size: 12pt; margin: 0.5em 0 0.25em 0; border-bottom: 1px solid #333; padding-bottom: 2px; }
     .block { margin: 0.2em 0; }
     .date { color: #555; font-size: 10pt; }

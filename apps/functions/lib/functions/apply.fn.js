@@ -90,8 +90,8 @@ exports.applyApi = (0, https_1.onRequest)({ timeoutSeconds: 300, memory: '1GiB',
             return;
         }
         const profile = userDoc.data()?.profile;
-        if (!profile?.headline || !profile.summary) {
-            (0, response_1.error)(res, 404, types_1.APPLY_ERROR_CODES.PROFILE_NOT_FOUND, 'User profile missing or incomplete');
+        if (!profile?.headline?.trim()) {
+            (0, response_1.error)(res, 404, types_1.APPLY_ERROR_CODES.PROFILE_NOT_FOUND, 'User profile missing headline');
             return;
         }
         const existingSnap = await db

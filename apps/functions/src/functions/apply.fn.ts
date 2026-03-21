@@ -111,8 +111,8 @@ export const applyApi = onRequest(
       return;
     }
     const profile = userDoc.data()?.profile as UserProfile | undefined;
-    if (!profile?.headline || !profile.summary) {
-      error(res, 404, APPLY_ERROR_CODES.PROFILE_NOT_FOUND, 'User profile missing or incomplete');
+    if (!profile?.headline?.trim()) {
+      error(res, 404, APPLY_ERROR_CODES.PROFILE_NOT_FOUND, 'User profile missing headline');
       return;
     }
 

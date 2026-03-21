@@ -20,8 +20,10 @@ export const preferencesApi = onRequest(async (req, res) => {
 
   if (req.method === 'GET') {
     const doc = await docRef.get();
-    const prefs = doc.exists ? doc.data()?.preferences ?? {} : {};
-    success(res, 200, { preferences: prefs });
+    const data = doc.exists ? doc.data() : null;
+    const prefs = data?.preferences ?? {};
+    const profile = data?.profile ?? null;
+    success(res, 200, { preferences: prefs, profile });
     return;
   }
 

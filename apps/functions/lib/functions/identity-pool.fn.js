@@ -27,7 +27,13 @@ exports.identityPoolApi = (0, https_1.onRequest)(async (req, res) => {
     if (req.method === 'GET') {
         const doc = await docRef.get();
         const data = doc.exists ? doc.data() : null;
-        const items = data?.items ?? [];
+        const rawItems = data?.items ?? [];
+        const items = rawItems.map((e) => ({
+            ...e,
+            headline: e.headline ?? '',
+            location: e.location ?? '',
+            label: e.label ?? '',
+        }));
         const defaultId = data?.defaultId ?? null;
         (0, response_1.success)(res, 200, { items, defaultId });
         return;
@@ -38,7 +44,7 @@ exports.identityPoolApi = (0, https_1.onRequest)(async (req, res) => {
             (0, response_1.error)(res, 400, 'INVALID_INPUT', parsed.error.message);
             return;
         }
-        const { name, email, phone, label } = parsed.data;
+        const { name, email, phone, label, headline, location } = parsed.data;
         const id = generateId();
         const now = new Date().toISOString();
         const entry = {
@@ -46,6 +52,8 @@ exports.identityPoolApi = (0, https_1.onRequest)(async (req, res) => {
             name,
             email,
             phone,
+            headline: headline ?? '',
+            location: location ?? '',
             label: label ?? '',
             createdAt: now,
             updatedAt: now,
