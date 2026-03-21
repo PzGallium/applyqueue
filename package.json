@@ -17,7 +17,9 @@
     "typecheck": "turbo typecheck",
     "clean": "turbo clean",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "prepare": "husky"
+    "prepare": "husky",
+    "emulators": "firebase emulators:start --only functions,firestore,storage,hosting,ui",
+    "emulators:all": "firebase emulators:start"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

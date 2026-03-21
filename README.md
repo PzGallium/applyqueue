@@ -34,9 +34,13 @@ pnpm install
 cp .env.example .env.local
 # Edit .env.local with your Firebase config
 
-# Start Firebase emulators + dev server
-firebase emulators:start &
+# Build shared (required: Functions / emulator load @applyqueue/shared from dist/)
+pnpm build --filter @applyqueue/shared
+
+# Start Firebase emulators + dev server（默认方案 A：不启 Auth 模拟器，可与线上 Google 登录共用 ID Token）
+pnpm emulators &
 pnpm dev
+# 若需完整套件含 Auth 模拟器：pnpm emulators:all，且须在 apps/web 设 VITE_USE_AUTH_EMULATOR=true 并重新登录
 ```
 
 Open [http://localhost:5173](http://localhost:5173)
@@ -87,7 +91,8 @@ docker compose -f docker/docker-compose.yml up
 | `pnpm lint` | Lint all packages |
 | `pnpm typecheck` | TypeScript check |
 | `firebase deploy` | Deploy to production |
-| `firebase emulators:start` | Start local Firebase |
+| `pnpm emulators` | Local Firebase（无 Auth 模拟器，适合线上账号联调） |
+| `pnpm emulators:all` | 完整模拟器（含 Auth；需配合 `VITE_USE_AUTH_EMULATOR`） |
 
 ## Contributing
 
