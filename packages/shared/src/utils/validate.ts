@@ -138,6 +138,8 @@ export const identityCreateSchema = z.object({
   name: z.string().min(1).max(100),
   email: z.string().email().max(200),
   phone: z.string().min(1).max(30),
+  headline: z.string().max(200).default(''),
+  location: z.string().max(200).default(''),
   label: z.string().max(50).default(''),
 });
 
@@ -146,6 +148,8 @@ export const identityUpdateSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   email: z.string().email().max(200).optional(),
   phone: z.string().min(1).max(30).optional(),
+  headline: z.string().max(200).optional(),
+  location: z.string().max(200).optional(),
   label: z.string().max(50).optional(),
 });
 
@@ -157,13 +161,27 @@ export const identitySetDefaultSchema = z.object({
   id: z.string().min(1).nullable(),
 });
 
-export const resumeRefineRequestSchema = z.object({
-  rawJdText: z.string().min(50).max(50000),
-  identityId: z.string().max(100).optional(),
-  useProjectPool: z.boolean().default(true),
-  llmProvider: z.string().min(1).default('gemini'),
-  llmModel: z.string().max(100).optional(),
-});
+export const resumeRefineRequestSchema = z
+  .object({
+    rawJdText: z.string().min(50).max(50000),
+    /** 必选：精修简历标题与联系方式来自该身份 */
+    identityId: z.string().min(1).max(100),
+    /** 主档案 experience 数组的下标（可多选） */
+    selectedExperienceIndices: z.array(z.number().int().min(0)).default([]),
+    /** 项目池 projects/{id} 文档 id */
+    selectedProjectIds: z.array(z.string().min(1).max(200)).default([]),
+    selectedEducationIndices: z.array(z.number().int().min(0)).default([]),
+    selectedSkillIndices: z.array(z.number().int().min(0)).default([]),
+    llmProvider: z.string().min(1).default('gemini'),
+    llmModel: z.string().max(100).optional(),
+  })
+  .refine(
+    (d) => d.selectedExperienceIndices.length > 0 || d.selectedProjectIds.length > 0,
+    {
+      message: 'At least one experience entry or one project must be selected',
+      path: ['selectedExperienceIndices'],
+    },
+  );
 
 export const projectMatchRunSchema = z.object({
   jdProfileId: z.string().min(1),

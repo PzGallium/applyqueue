@@ -22,6 +22,7 @@ export interface ResumeProjectItem {
 
 export interface ResumeContent {
   headline: string;
+  /** 产品不再使用；保留字段以兼容存储与 LLM schema，恒为空字符串 */
   summary: string;
   experience: ResumeExperienceItem[];
   education: ResumeEducationItem[];
