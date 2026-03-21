@@ -35,6 +35,7 @@ export interface ApplyMvpSuccessResponse {
 }
 export declare const resumeContentSchema: z.ZodObject<{
     headline: z.ZodString;
+    /** 产品废弃；生成后会被覆盖为空串 */
     summary: z.ZodString;
     experience: z.ZodArray<z.ZodObject<{
         company: z.ZodString;
@@ -78,19 +79,25 @@ export declare const resumeContentSchema: z.ZodObject<{
         url: z.ZodNullable<z.ZodString>;
         highlights: z.ZodArray<z.ZodString, "many">;
     }, "strip", z.ZodTypeAny, {
-        description: string;
-        highlights: string[];
         name: string;
+        description: string;
         url: string | null;
+        highlights: string[];
     }, {
-        description: string;
-        highlights: string[];
         name: string;
+        description: string;
         url: string | null;
+        highlights: string[];
     }>, "many">;
 }, "strip", z.ZodTypeAny, {
     headline: string;
     summary: string;
+    experience: {
+        date: string;
+        company: string;
+        title: string;
+        bullets: string[];
+    }[];
     education: {
         date: string;
         school: string;
@@ -98,22 +105,22 @@ export declare const resumeContentSchema: z.ZodObject<{
         major: string;
         gpa: string | null;
     }[];
-    experience: {
-        date: string;
-        company: string;
-        title: string;
-        bullets: string[];
-    }[];
     skills: string[];
     projects: {
-        description: string;
-        highlights: string[];
         name: string;
+        description: string;
         url: string | null;
+        highlights: string[];
     }[];
 }, {
     headline: string;
     summary: string;
+    experience: {
+        date: string;
+        company: string;
+        title: string;
+        bullets: string[];
+    }[];
     education: {
         date: string;
         school: string;
@@ -121,18 +128,12 @@ export declare const resumeContentSchema: z.ZodObject<{
         major: string;
         gpa: string | null;
     }[];
-    experience: {
-        date: string;
-        company: string;
-        title: string;
-        bullets: string[];
-    }[];
     skills: string[];
     projects: {
-        description: string;
-        highlights: string[];
         name: string;
+        description: string;
         url: string | null;
+        highlights: string[];
     }[];
 }>;
 export type ResumeContent = z.infer<typeof resumeContentSchema>;

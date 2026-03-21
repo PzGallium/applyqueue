@@ -11,18 +11,18 @@ const RESUME_JSON_INSTRUCTION = `You must respond with a single JSON object only
 The JSON must match this exact structure (all fields required unless noted):
 {
   "headline": "string",
-  "summary": "string",
+  "summary": "",
   "experience": [{"company":"","title":"","date":"","bullets":[]}],
   "education": [{"school":"","degree":"","major":"","date":"","gpa":null or "string"}],
   "skills": ["string"],
   "projects": [{"name":"","description":"","url":null or "","highlights":[]}]
 }
 Rules: Use ONLY the candidate's real companies, titles, and dates. Do not invent any experience or education.
-You may reword bullets and summary to emphasize JD-relevant skills. Keep dates and company/title names unchanged.`;
+The "summary" field MUST be exactly an empty string "" — do not write a personal summary.
+You may reword bullets to emphasize JD-relevant skills. Keep dates and company/title names unchanged.`;
 function buildResumePrompt(profile, jdText) {
     const profileBlob = JSON.stringify({
         headline: profile.headline,
-        summary: profile.summary,
         location: profile.location,
         education: profile.education.map((e) => ({
             school: e.school,
@@ -86,6 +86,6 @@ async function generateResumeContent(llm, profile, jdText, model) {
     if (!result.success) {
         throw new Error(`Resume schema validation failed: ${result.error.message}`);
     }
-    return result.data;
+    return { ...result.data, summary: '' };
 }
 //# sourceMappingURL=resume-generator.js.map

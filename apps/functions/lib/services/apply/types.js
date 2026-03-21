@@ -46,6 +46,7 @@ const resumeProjectItemSchema = zod_1.z.object({
 });
 exports.resumeContentSchema = zod_1.z.object({
     headline: zod_1.z.string(),
+    /** 产品废弃；生成后会被覆盖为空串 */
     summary: zod_1.z.string(),
     experience: zod_1.z.array(resumeExperienceItemSchema),
     education: zod_1.z.array(resumeEducationItemSchema),

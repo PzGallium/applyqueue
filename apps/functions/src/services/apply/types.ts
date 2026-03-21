@@ -86,6 +86,7 @@ const resumeProjectItemSchema = z.object({
 
 export const resumeContentSchema = z.object({
   headline: z.string(),
+  /** 产品废弃；生成后会被覆盖为空串 */
   summary: z.string(),
   experience: z.array(resumeExperienceItemSchema),
   education: z.array(resumeEducationItemSchema),
