@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, type Auth, type User } from 'firebase/auth';
+import { connectAuthEmulator, getAuth, GoogleAuthProvider, type Auth, type User } from 'firebase/auth';
 
 const config = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY ?? '',
@@ -16,6 +16,11 @@ if (config.apiKey && config.projectId) {
   try {
     const app = initializeApp(config);
     _auth = getAuth(app);
+    // 与 Functions 模拟器同时使用 Auth 模拟器时，需在 .env 设 VITE_USE_AUTH_EMULATOR=true，并重新登录（不要用生产 Token 调带 Auth 模拟器的后端）
+    if (import.meta.env.DEV && import.meta.env.VITE_USE_AUTH_EMULATOR === 'true') {
+      const host = import.meta.env.VITE_AUTH_EMULATOR_HOST ?? 'http://127.0.0.1:9099';
+      connectAuthEmulator(_auth, host, { disableWarnings: true });
+    }
   } catch {
     _auth = null;
   }

@@ -17,6 +17,9 @@ export interface Preferences {
   excludeCompanies?: string[];
 }
 
+/** preferences 字段 + 可选 profile.resumeStyleReference（经 PUT /api/preferences 写入） */
+export type PreferencesPatch = Partial<Preferences> & { resumeStyleReference?: string };
+
 export function usePreferences() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -62,7 +65,7 @@ export function usePreferences() {
   }, [user]);
 
   const savePreferences = useCallback(
-    async (prefs: Partial<Preferences>): Promise<boolean> => {
+    async (prefs: PreferencesPatch): Promise<boolean> => {
       if (!user) return false;
       setLoading(true);
       setError(null);

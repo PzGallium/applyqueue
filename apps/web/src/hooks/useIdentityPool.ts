@@ -28,14 +28,7 @@ export function useIdentityPool() {
   }, [user]);
 
   const create = useCallback(
-    async (
-      name: string,
-      email: string,
-      phone: string,
-      label = '',
-      headline = '',
-      location = '',
-    ): Promise<boolean> => {
+    async (name: string, email: string, phone: string, label = '', location = ''): Promise<boolean> => {
       if (!user) return false;
       setLoading(true);
       setError(null);
@@ -43,7 +36,7 @@ export function useIdentityPool() {
         const token = await getIdToken(user);
         await apiRequest('/api/identity-pool', {
           method: 'POST',
-          body: JSON.stringify({ name, email, phone, label, headline, location }),
+          body: JSON.stringify({ name, email, phone, label, location }),
           token,
         });
         return true;
@@ -65,7 +58,6 @@ export function useIdentityPool() {
         email: string;
         phone: string;
         label: string;
-        headline: string;
         location: string;
       }>,
     ): Promise<boolean> => {

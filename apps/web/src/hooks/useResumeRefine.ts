@@ -19,7 +19,6 @@ export interface RefineResult {
     name: string;
     email: string;
     phone: string;
-    headline: string;
     location: string;
   } | null;
 }

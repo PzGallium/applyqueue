@@ -11,22 +11,20 @@ function IdentityItem({
   isDefault,
   onSetDefault,
   onDelete,
-  onUpdate,
+  onUpdateLocation,
 }: {
   entry: IdentityEntry;
   isDefault: boolean;
   onSetDefault: () => void;
   onDelete: () => void;
-  onUpdate: (headline: string, location: string) => Promise<void>;
+  onUpdateLocation: (location: string) => Promise<void>;
 }) {
-  const [headline, setHeadline] = useState(entry.headline ?? '');
   const [location, setLocation] = useState(entry.location ?? '');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setHeadline(entry.headline ?? '');
     setLocation(entry.location ?? '');
-  }, [entry.id, entry.headline, entry.location]);
+  }, [entry.id, entry.location]);
 
   return (
     <div className="space-y-3 rounded-lg border p-3">
@@ -61,15 +59,9 @@ function IdentityItem({
         </div>
       </div>
       <div className="space-y-2 rounded-md bg-muted/40 p-2">
-        <p className="text-xs font-medium text-muted-foreground">精修简历用：标题与所在地（写入该身份）</p>
+        <p className="text-xs font-medium text-muted-foreground">所在地（可选，精修组装用）</p>
         <Input
-          placeholder="简历标题 / Headline"
-          value={headline}
-          onChange={(e) => setHeadline(e.target.value)}
-          className="h-8 text-sm"
-        />
-        <Input
-          placeholder="所在地（可选）"
+          placeholder="所在地"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
           className="h-8 text-sm"
@@ -82,13 +74,13 @@ function IdentityItem({
           onClick={async () => {
             setSaving(true);
             try {
-              await onUpdate(headline.trim(), location.trim());
+              await onUpdateLocation(location.trim());
             } finally {
               setSaving(false);
             }
           }}
         >
-          保存标题与所在地
+          保存所在地
         </Button>
       </div>
     </div>
@@ -101,26 +93,17 @@ function AddIdentityForm({ onSuccess }: { onSuccess: () => void }) {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [label, setLabel] = useState('');
-  const [headline, setHeadline] = useState('');
   const [location, setLocation] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !phone.trim()) return;
-    const ok = await create(
-      name.trim(),
-      email.trim(),
-      phone.trim(),
-      label.trim(),
-      headline.trim(),
-      location.trim(),
-    );
+    const ok = await create(name.trim(), email.trim(), phone.trim(), label.trim(), location.trim());
     if (ok) {
       setName('');
       setEmail('');
       setPhone('');
       setLabel('');
-      setHeadline('');
       setLocation('');
       onSuccess();
     }
@@ -146,11 +129,6 @@ function AddIdentityForm({ onSuccess }: { onSuccess: () => void }) {
         value={phone}
         onChange={(e) => setPhone(e.target.value)}
         required
-      />
-      <Input
-        placeholder="简历标题（精修简历页眉用）"
-        value={headline}
-        onChange={(e) => setHeadline(e.target.value)}
       />
       <Input
         placeholder="所在地（可选）"
@@ -194,7 +172,7 @@ export function IdentityPoolManager() {
           身份池
         </CardTitle>
         <CardDescription>
-          维护多组姓名、邮箱、电话与<strong>简历标题</strong>。精修简历必须选择一条身份；<strong>不再使用主档案里的个人总结（summary）</strong>，标题以所选身份为准。
+          维护多组姓名、邮箱、电话与所在地。精修简历须选择一条身份；<strong>页眉标题（headline）使用主档案</strong>，版式参考见「简历样式参考」卡片。
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -211,8 +189,8 @@ export function IdentityPoolManager() {
                 onDelete={async () => {
                   if (await remove(entry.id)) refresh();
                 }}
-                onUpdate={async (h, loc) => {
-                  if (await update(entry.id, { headline: h, location: loc })) refresh();
+                onUpdateLocation={async (loc) => {
+                  if (await update(entry.id, { location: loc })) refresh();
                 }}
               />
             ))}

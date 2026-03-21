@@ -16,7 +16,6 @@ function ResumePreview({ result }: { result: RefineResult }) {
       {identity && (
         <div className="border-b pb-3">
           <p className="mb-1 text-xs font-medium text-muted-foreground">本次使用身份</p>
-          <p className="font-medium">{identity.headline || '（未设置简历标题）'}</p>
           <p className="text-muted-foreground">
             {identity.name} · {identity.email} · {identity.phone}
           </p>
@@ -157,7 +156,7 @@ export function Refine() {
         <h1 className="text-2xl font-semibold">精修简历</h1>
         <p className="mt-1 text-muted-foreground">
           粘贴目标职位描述，并<strong>必选一条身份</strong>；<strong>至少勾选一段主档案经历或一个项目池项目</strong>。未勾选的板块不会用主档案回填（strict
-          empty）。<strong>不使用个人总结（summary）</strong>；页眉标题来自所选身份的简历标题。
+          empty）。<strong>不使用个人总结（summary）</strong>；页眉标题来自<strong>主档案 headline</strong>，版式参考内置简历范文（可在设置中覆盖）。
         </p>
       </div>
 
@@ -331,7 +330,7 @@ export function Refine() {
                 {' '}
                 设置{' '}
               </Link>
-              中维护身份池（含简历标题）、项目池，并连接 AI 密钥。主档案中的「个人总结」字段<strong>不会</strong>用于精修流程。
+              中维护主档案 headline、身份池、简历样式参考与项目池，并连接 AI 密钥。主档案「个人总结」<strong>不会</strong>用于精修流程。
             </p>
           </CardContent>
         </Card>
