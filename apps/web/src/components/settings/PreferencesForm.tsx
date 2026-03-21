@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Save, GripVertical, Plus, X, Settings2 } from 'lucide-react';
-import { usePreferences, type Preferences } from '@/hooks/usePreferences';
+import { usePreferences } from '@/hooks/usePreferences';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';

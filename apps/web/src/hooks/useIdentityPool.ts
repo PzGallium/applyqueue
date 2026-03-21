@@ -1,17 +1,10 @@
 import { useState, useCallback } from 'react';
+import type { IdentityEntry } from '@applyqueue/shared';
 import { useAuth } from './useAuth';
 import { apiRequest } from '@/lib/api';
 import { getIdToken } from '@/lib/firebase';
 
-export interface IdentityEntry {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  label: string;
-  createdAt: string;
-  updatedAt: string;
-}
+export type { IdentityEntry };
 
 export function useIdentityPool() {
   const { user } = useAuth();
@@ -35,7 +28,14 @@ export function useIdentityPool() {
   }, [user]);
 
   const create = useCallback(
-    async (name: string, email: string, phone: string, label = ''): Promise<boolean> => {
+    async (
+      name: string,
+      email: string,
+      phone: string,
+      label = '',
+      headline = '',
+      location = '',
+    ): Promise<boolean> => {
       if (!user) return false;
       setLoading(true);
       setError(null);
@@ -43,7 +43,7 @@ export function useIdentityPool() {
         const token = await getIdToken(user);
         await apiRequest('/api/identity-pool', {
           method: 'POST',
-          body: JSON.stringify({ name, email, phone, label }),
+          body: JSON.stringify({ name, email, phone, label, headline, location }),
           token,
         });
         return true;
@@ -58,7 +58,17 @@ export function useIdentityPool() {
   );
 
   const update = useCallback(
-    async (id: string, updates: Partial<{ name: string; email: string; phone: string; label: string }>): Promise<boolean> => {
+    async (
+      id: string,
+      updates: Partial<{
+        name: string;
+        email: string;
+        phone: string;
+        label: string;
+        headline: string;
+        location: string;
+      }>,
+    ): Promise<boolean> => {
       if (!user) return false;
       setLoading(true);
       setError(null);

@@ -15,7 +15,21 @@ export interface ResumeContent {
 export interface RefineResult {
   resumeContent: ResumeContent;
   changes: Array<{ section: string; field: string; original: string; tailored: string; reason: string }>;
-  identity: { name: string; email: string; phone: string } | null;
+  identity: {
+    name: string;
+    email: string;
+    phone: string;
+    headline: string;
+    location: string;
+  } | null;
+}
+
+export interface RefineRequestOptions {
+  identityId: string;
+  selectedExperienceIndices: number[];
+  selectedProjectIds: string[];
+  selectedEducationIndices: number[];
+  selectedSkillIndices: number[];
 }
 
 export function useResumeRefine() {
@@ -24,10 +38,7 @@ export function useResumeRefine() {
   const [error, setError] = useState<string | null>(null);
 
   const refine = useCallback(
-    async (
-      rawJdText: string,
-      options?: { identityId?: string; useProjectPool?: boolean },
-    ): Promise<RefineResult | null> => {
+    async (rawJdText: string, options: RefineRequestOptions): Promise<RefineResult | null> => {
       if (!user) return null;
       setLoading(true);
       setError(null);
@@ -37,8 +48,11 @@ export function useResumeRefine() {
           method: 'POST',
           body: JSON.stringify({
             rawJdText: rawJdText.trim(),
-            identityId: options?.identityId,
-            useProjectPool: options?.useProjectPool ?? true,
+            identityId: options.identityId,
+            selectedExperienceIndices: options.selectedExperienceIndices,
+            selectedProjectIds: options.selectedProjectIds,
+            selectedEducationIndices: options.selectedEducationIndices,
+            selectedSkillIndices: options.selectedSkillIndices,
             llmProvider: 'gemini',
           }),
           token,

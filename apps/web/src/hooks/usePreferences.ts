@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import type { UserProfile } from '@applyqueue/shared';
 import { useAuth } from './useAuth';
 import { apiRequest } from '@/lib/api';
 import { getIdToken } from '@/lib/firebase';
@@ -27,11 +28,34 @@ export function usePreferences() {
     setError(null);
     try {
       const token = await getIdToken(user);
-      const data = await apiRequest<{ preferences: Preferences }>('/api/preferences', { token });
+      const data = await apiRequest<{ preferences: Preferences; profile?: UserProfile | null }>(
+        '/api/preferences',
+        { token },
+      );
       return data.preferences ?? {};
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load preferences');
       return {};
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  /** 与 preferences 同文档，供精修页组装勾选 */
+  const getProfile = useCallback(async (): Promise<UserProfile | null> => {
+    if (!user) return null;
+    setLoading(true);
+    setError(null);
+    try {
+      const token = await getIdToken(user);
+      const data = await apiRequest<{ preferences: Preferences; profile?: UserProfile | null }>(
+        '/api/preferences',
+        { token },
+      );
+      return data.profile ?? null;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load profile');
+      return null;
     } finally {
       setLoading(false);
     }
@@ -60,5 +84,5 @@ export function usePreferences() {
     [user],
   );
 
-  return { getPreferences, savePreferences, loading, error };
+  return { getPreferences, getProfile, savePreferences, loading, error };
 }
