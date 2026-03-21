@@ -4,6 +4,7 @@ export const profileSchema = z.object({
   headline: z.string().max(200),
   summary: z.string().max(2000),
   location: z.string().max(200),
+  resumeStyleReference: z.string().max(25000).optional(),
   education: z.array(
     z.object({
       school: z.string().max(200),
@@ -138,7 +139,6 @@ export const identityCreateSchema = z.object({
   name: z.string().min(1).max(100),
   email: z.string().email().max(200),
   phone: z.string().min(1).max(30),
-  headline: z.string().max(200).default(''),
   location: z.string().max(200).default(''),
   label: z.string().max(50).default(''),
 });
@@ -148,7 +148,6 @@ export const identityUpdateSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   email: z.string().email().max(200).optional(),
   phone: z.string().min(1).max(30).optional(),
-  headline: z.string().max(200).optional(),
   location: z.string().max(200).optional(),
   label: z.string().max(50).optional(),
 });

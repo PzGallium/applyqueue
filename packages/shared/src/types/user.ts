@@ -34,6 +34,8 @@ export interface UserProfile {
   headline: string;
   summary: string;
   location: string;
+  /** 可选：覆盖内置范文；生成简历时作为版式/语气参考（事实仍以 profile 勾选为准） */
+  resumeStyleReference?: string;
   education: Education[];
   experience: Experience[];
   skills: string[];
