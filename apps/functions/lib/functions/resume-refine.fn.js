@@ -46,6 +46,10 @@ exports.resumeRefineApi = (0, https_1.onRequest)({ timeoutSeconds: 120, memory: 
         (0, response_1.error)(res, 404, 'PROFILE_NOT_FOUND', 'User profile missing or incomplete');
         return;
     }
+    if (!profile.headline?.trim()) {
+        (0, response_1.error)(res, 400, 'INVALID_INPUT', 'Please set profile headline (主档案标题) before refining');
+        return;
+    }
     const poolDoc = await db.doc(`identity_profiles/${user.uid}`).get();
     const pool = poolDoc.exists ? poolDoc.data() : null;
     const rawEntry = pool?.items?.find((e) => e.id === identityId);
@@ -94,7 +98,6 @@ exports.resumeRefineApi = (0, https_1.onRequest)({ timeoutSeconds: 120, memory: 
     try {
         const llm = (0, llm_1.getLlmClient)(llmProvider, credential, llmProvider === 'gemini' ? 'oauth' : 'api_key');
         const resumeContent = await (0, resume_generator_1.generateResumeContent)(llm, assembled, jdText, llmModel);
-        resumeContent.headline = identityNorm.headline;
         resumeContent.summary = '';
         (0, response_1.success)(res, 200, {
             resumeContent: resumeContent,
@@ -103,7 +106,6 @@ exports.resumeRefineApi = (0, https_1.onRequest)({ timeoutSeconds: 120, memory: 
                 name: identityNorm.name,
                 email: identityNorm.email,
                 phone: identityNorm.phone,
-                headline: identityNorm.headline,
                 location: identityNorm.location,
             },
         });

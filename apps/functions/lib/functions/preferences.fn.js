@@ -43,14 +43,25 @@ exports.preferencesApi = (0, https_1.onRequest)(async (req, res) => {
                 update[`preferences.${key}`] = body[key];
             }
         }
+        if ('resumeStyleReference' in body) {
+            if (typeof body.resumeStyleReference !== 'string') {
+                (0, response_1.error)(res, 400, 'INVALID_BODY', 'resumeStyleReference must be a string');
+                return;
+            }
+            update['profile.resumeStyleReference'] = body.resumeStyleReference;
+        }
         if (Object.keys(update).length === 0) {
             (0, response_1.error)(res, 400, 'NO_FIELDS', 'No valid preference fields provided');
             return;
         }
         update['updatedAt'] = new Date().toISOString();
         await docRef.set(update, { merge: true });
-        const fresh = (await docRef.get()).data()?.preferences ?? {};
-        (0, response_1.success)(res, 200, { preferences: fresh });
+        const snap = await docRef.get();
+        const data = snap.data();
+        (0, response_1.success)(res, 200, {
+            preferences: data?.preferences ?? {},
+            profile: data?.profile ?? null,
+        });
         return;
     }
     (0, response_1.error)(res, 405, 'METHOD_NOT_ALLOWED', 'Use GET or PUT');

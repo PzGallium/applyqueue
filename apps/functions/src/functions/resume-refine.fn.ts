@@ -67,6 +67,10 @@ export const resumeRefineApi = onRequest(
       error(res, 404, 'PROFILE_NOT_FOUND', 'User profile missing or incomplete');
       return;
     }
+    if (!profile.headline?.trim()) {
+      error(res, 400, 'INVALID_INPUT', 'Please set profile headline (主档案标题) before refining');
+      return;
+    }
 
     const poolDoc = await db.doc(`identity_profiles/${user.uid}`).get();
     const pool = poolDoc.exists ? (poolDoc.data() as { items?: IdentityEntry[] }) : null;
@@ -126,7 +130,6 @@ export const resumeRefineApi = onRequest(
     try {
       const llm = getLlmClient(llmProvider, credential, llmProvider === 'gemini' ? 'oauth' : 'api_key');
       const resumeContent = await generateResumeContent(llm, assembled, jdText, llmModel);
-      resumeContent.headline = identityNorm.headline;
       resumeContent.summary = '';
 
       success(res, 200, {
@@ -136,7 +139,6 @@ export const resumeRefineApi = onRequest(
           name: identityNorm.name,
           email: identityNorm.email,
           phone: identityNorm.phone,
-          headline: identityNorm.headline,
           location: identityNorm.location,
         },
       });

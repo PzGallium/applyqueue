@@ -43,14 +43,14 @@ export declare const resumeContentSchema: z.ZodObject<{
         date: z.ZodString;
         bullets: z.ZodArray<z.ZodString, "many">;
     }, "strip", z.ZodTypeAny, {
-        date: string;
-        company: string;
         title: string;
+        company: string;
+        date: string;
         bullets: string[];
     }, {
-        date: string;
-        company: string;
         title: string;
+        company: string;
+        date: string;
         bullets: string[];
     }>, "many">;
     education: z.ZodArray<z.ZodObject<{
@@ -93,9 +93,9 @@ export declare const resumeContentSchema: z.ZodObject<{
     headline: string;
     summary: string;
     experience: {
-        date: string;
-        company: string;
         title: string;
+        company: string;
+        date: string;
         bullets: string[];
     }[];
     education: {
@@ -116,9 +116,9 @@ export declare const resumeContentSchema: z.ZodObject<{
     headline: string;
     summary: string;
     experience: {
-        date: string;
-        company: string;
         title: string;
+        company: string;
+        date: string;
         bullets: string[];
     }[];
     education: {

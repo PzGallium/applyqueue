@@ -8,7 +8,6 @@ export interface IdentityForRefine {
   name: string;
   email: string;
   phone: string;
-  headline: string;
   location: string;
 }
 
@@ -16,14 +15,12 @@ export function normalizeIdentityEntry(raw: {
   name: string;
   email: string;
   phone: string;
-  headline?: string;
   location?: string;
 }): IdentityForRefine {
   return {
     name: raw.name,
     email: raw.email,
     phone: raw.phone,
-    headline: typeof raw.headline === 'string' ? raw.headline : '',
     location: typeof raw.location === 'string' ? raw.location : '',
   };
 }
@@ -91,7 +88,7 @@ export function buildRefineProfile(
   const projects: Project[] = projectsFromPool.map(userProjectToResumeProject);
 
   return {
-    headline: identity.headline,
+    headline: fullProfile.headline,
     summary: '',
     location: identity.location,
     education,
@@ -99,5 +96,6 @@ export function buildRefineProfile(
     skills,
     projects,
     links: fullProfile.links,
+    resumeStyleReference: fullProfile.resumeStyleReference,
   };
 }

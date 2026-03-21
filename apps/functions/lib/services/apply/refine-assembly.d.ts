@@ -6,14 +6,12 @@ export interface IdentityForRefine {
     name: string;
     email: string;
     phone: string;
-    headline: string;
     location: string;
 }
 export declare function normalizeIdentityEntry(raw: {
     name: string;
     email: string;
     phone: string;
-    headline?: string;
     location?: string;
 }): IdentityForRefine;
 export declare function userProjectToResumeProject(p: UserProject): Project;

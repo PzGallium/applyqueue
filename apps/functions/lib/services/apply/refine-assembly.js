@@ -12,7 +12,6 @@ function normalizeIdentityEntry(raw) {
         name: raw.name,
         email: raw.email,
         phone: raw.phone,
-        headline: typeof raw.headline === 'string' ? raw.headline : '',
         location: typeof raw.location === 'string' ? raw.location : '',
     };
 }
@@ -61,7 +60,7 @@ function buildRefineProfile(fullProfile, identity, selection, projectsFromPool) 
         .filter((s) => s != null);
     const projects = projectsFromPool.map(userProjectToResumeProject);
     return {
-        headline: identity.headline,
+        headline: fullProfile.headline,
         summary: '',
         location: identity.location,
         education,
@@ -69,6 +68,7 @@ function buildRefineProfile(fullProfile, identity, selection, projectsFromPool) 
         skills,
         projects,
         links: fullProfile.links,
+        resumeStyleReference: fullProfile.resumeStyleReference,
     };
 }
 //# sourceMappingURL=refine-assembly.js.map

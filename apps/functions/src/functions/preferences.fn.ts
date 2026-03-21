@@ -48,6 +48,14 @@ export const preferencesApi = onRequest(async (req, res) => {
       }
     }
 
+    if ('resumeStyleReference' in body) {
+      if (typeof body.resumeStyleReference !== 'string') {
+        error(res, 400, 'INVALID_BODY', 'resumeStyleReference must be a string');
+        return;
+      }
+      update['profile.resumeStyleReference'] = body.resumeStyleReference;
+    }
+
     if (Object.keys(update).length === 0) {
       error(res, 400, 'NO_FIELDS', 'No valid preference fields provided');
       return;
@@ -56,8 +64,12 @@ export const preferencesApi = onRequest(async (req, res) => {
     update['updatedAt'] = new Date().toISOString();
 
     await docRef.set(update, { merge: true });
-    const fresh = (await docRef.get()).data()?.preferences ?? {};
-    success(res, 200, { preferences: fresh });
+    const snap = await docRef.get();
+    const data = snap.data();
+    success(res, 200, {
+      preferences: data?.preferences ?? {},
+      profile: data?.profile ?? null,
+    });
     return;
   }
 

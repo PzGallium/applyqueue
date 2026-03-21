@@ -6,6 +6,7 @@
 import type { UserProfile } from '@applyqueue/shared';
 import type { LlmClient } from '../../utils/llm';
 import { resumeContentSchema, type ResumeContent } from './types';
+import { resolveResumeStyleReference } from './resume-style-reference-default';
 
 const RESUME_JSON_INSTRUCTION = `You must respond with a single JSON object only, no markdown or code fences.
 The JSON must match this exact structure (all fields required unless noted):
@@ -22,6 +23,7 @@ The "summary" field MUST be exactly an empty string "" — do not write a person
 You may reword bullets to emphasize JD-relevant skills. Keep dates and company/title names unchanged.`;
 
 export function buildResumePrompt(profile: UserProfile, jdText: string): string {
+  const styleRef = resolveResumeStyleReference(profile.resumeStyleReference ?? null);
   const profileBlob = JSON.stringify({
     headline: profile.headline,
     location: profile.location,
@@ -51,6 +53,9 @@ export function buildResumePrompt(profile: UserProfile, jdText: string): string 
   });
 
   return `${RESUME_JSON_INSTRUCTION}
+
+Style reference resume (match section flow, bullet style, and tone; all factual content MUST come from the candidate profile below — do not copy employers, dates, or contact details from the reference):
+${styleRef}
 
 Candidate profile (use only this data, do not invent):
 ${profileBlob}

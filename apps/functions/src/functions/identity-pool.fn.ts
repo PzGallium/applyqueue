@@ -38,7 +38,6 @@ export const identityPoolApi = onRequest(async (req, res) => {
     const rawItems = data?.items ?? [];
     const items: IdentityEntry[] = rawItems.map((e) => ({
       ...e,
-      headline: e.headline ?? '',
       location: e.location ?? '',
       label: e.label ?? '',
     }));
@@ -53,7 +52,7 @@ export const identityPoolApi = onRequest(async (req, res) => {
       error(res, 400, 'INVALID_INPUT', parsed.error.message);
       return;
     }
-    const { name, email, phone, label, headline, location } = parsed.data;
+    const { name, email, phone, label, location } = parsed.data;
     const id = generateId();
     const now = new Date().toISOString();
     const entry: IdentityEntry = {
@@ -61,7 +60,6 @@ export const identityPoolApi = onRequest(async (req, res) => {
       name,
       email,
       phone,
-      headline: headline ?? '',
       location: location ?? '',
       label: label ?? '',
       createdAt: now,

@@ -7,6 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.buildResumePrompt = buildResumePrompt;
 exports.generateResumeContent = generateResumeContent;
 const types_1 = require("./types");
+const resume_style_reference_default_1 = require("./resume-style-reference-default");
 const RESUME_JSON_INSTRUCTION = `You must respond with a single JSON object only, no markdown or code fences.
 The JSON must match this exact structure (all fields required unless noted):
 {
@@ -21,6 +22,7 @@ Rules: Use ONLY the candidate's real companies, titles, and dates. Do not invent
 The "summary" field MUST be exactly an empty string "" — do not write a personal summary.
 You may reword bullets to emphasize JD-relevant skills. Keep dates and company/title names unchanged.`;
 function buildResumePrompt(profile, jdText) {
+    const styleRef = (0, resume_style_reference_default_1.resolveResumeStyleReference)(profile.resumeStyleReference ?? null);
     const profileBlob = JSON.stringify({
         headline: profile.headline,
         location: profile.location,
@@ -49,6 +51,9 @@ function buildResumePrompt(profile, jdText) {
         })),
     });
     return `${RESUME_JSON_INSTRUCTION}
+
+Style reference resume (match section flow, bullet style, and tone; all factual content MUST come from the candidate profile below — do not copy employers, dates, or contact details from the reference):
+${styleRef}
 
 Candidate profile (use only this data, do not invent):
 ${profileBlob}
